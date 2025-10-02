@@ -79,10 +79,25 @@ The generator creates:
 
 ## 🔄 Deployment to Streamlit Cloud
 
-1. Push your code to GitHub
+### Required Files for Deployment
+
+Make sure these files are in your repository:
+- `app.py` - Main application
+- `llmready_min.py` - Crawler script
+- `requirements.txt` - Python dependencies
+- `packages.txt` - System packages (Node.js and npm)
+
+### Deployment Steps
+
+1. Push your code to GitHub (including `packages.txt`)
 2. Go to [share.streamlit.io](https://share.streamlit.io)
 3. Connect your GitHub repository
 4. Deploy with one click!
+
+Streamlit Cloud will automatically:
+- Install Python dependencies from `requirements.txt`
+- Install system packages from `packages.txt` (Node.js and npm)
+- Run your app
 
 ### Environment Variables
 
