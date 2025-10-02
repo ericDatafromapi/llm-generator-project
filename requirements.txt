@@ -1,0 +1,39 @@
+# LLM-Ready MVP Requirements
+# ===========================
+#
+# Core Dependencies (CLI Tool):
+# - Uses only Python standard library (no external packages required)
+#
+# Web Interface Dependencies:
+# - streamlit (for web UI)
+# - plotly (for enhanced charts in web interface)
+
+# Core Python modules used (stdlib only):
+# - argparse (argument parsing)
+# - subprocess (running external commands)
+# - json (manifest generation)
+# - pathlib (file operations)
+# - zipfile (archive creation)
+# - datetime (timing)
+# - os, sys, time (system operations)
+# - threading (for background processing)
+# - io (for file handling)
+
+# External Runtime Requirements:
+# ----------------------------
+# Docker (preferred):
+#   Install Docker Desktop from https://docker.com/desktop
+#
+# OR
+#
+# Node.js + npx (fallback):
+#   Install Node.js from https://nodejs.org/
+#   npx will automatically install @mdream/crawl when needed
+
+# Installation:
+#   pip install -r requirements.txt  # Installs web interface dependencies
+#   python llmready_min.py --origin https://example.com  # CLI tool (no deps)
+#   streamlit run app.py  # Web interface
+
+# Web Interface Dependencies:
+streamlit>=1.28.0
