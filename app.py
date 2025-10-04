@@ -228,53 +228,91 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS for better styling
+# Custom CSS for professional styling
 st.markdown("""
 <style>
+    /* Import professional fonts */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+    
+    /* Global styles */
+    * {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+    
     .main-header {
         text-align: center;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
         color: white;
-        padding: 2rem;
-        border-radius: 10px;
+        padding: 3rem 2rem;
+        border-radius: 12px;
         margin-bottom: 2rem;
+        box-shadow: 0 10px 30px rgba(37, 99, 235, 0.2);
     }
+    
+    .main-header h1 {
+        font-weight: 700;
+        letter-spacing: -0.02em;
+    }
+    
+    .main-header p {
+        opacity: 0.95;
+        font-weight: 400;
+    }
+    
     .status-card {
         padding: 1rem;
         border-radius: 8px;
         margin: 1rem 0;
         border-left: 4px solid;
     }
+    
     .status-success {
-        background-color: #d4edda;
-        border-color: #28a745;
-        color: #155724;
+        background-color: #f0fdf4;
+        border-color: #16a34a;
+        color: #14532d;
     }
+    
     .status-error {
-        background-color: #f8d7da;
-        border-color: #dc3545;
-        color: #721c24;
+        background-color: #fef2f2;
+        border-color: #dc2626;
+        color: #7f1d1d;
     }
+    
     .status-info {
-        background-color: #d1ecf1;
-        border-color: #17a2b8;
-        color: #0c5460;
+        background-color: #eff6ff;
+        border-color: #2563eb;
+        color: #1e3a8a;
     }
+    
     .file-preview {
-        background-color: #f8f9fa;
-        padding: 1rem;
-        border-radius: 5px;
-        border: 1px solid #dee2e6;
-        font-family: monospace;
+        background-color: #f9fafb;
+        padding: 1.25rem;
+        border-radius: 8px;
+        border: 1px solid #e5e7eb;
+        font-family: 'IBM Plex Mono', 'Courier New', monospace;
         white-space: pre-wrap;
         max-height: 300px;
         overflow-y: auto;
     }
+    
     .sidebar-header {
-        font-size: 1.2rem;
-        font-weight: bold;
-        margin-bottom: 1rem;
-        color: #495057;
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 1.25rem;
+        color: #1f2937;
+        letter-spacing: -0.01em;
+    }
+    
+    /* Button styling */
+    .stButton > button {
+        font-weight: 500;
+        letter-spacing: -0.01em;
+        transition: all 0.2s ease;
+    }
+    
+    .stButton > button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
 </style>
 """, unsafe_allow_html=True)
@@ -358,88 +396,152 @@ def show_landing_page():
         <style>
             .hero-section {
                 text-align: center;
-                padding: 4rem 2rem;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                padding: 5rem 2rem;
+                background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
                 color: white;
-                border-radius: 15px;
-                margin-bottom: 3rem;
+                border-radius: 16px;
+                margin-bottom: 4rem;
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
             }
             .hero-title {
                 font-size: 3.5rem;
-                font-weight: bold;
-                margin-bottom: 1rem;
-                line-height: 1.2;
+                font-weight: 800;
+                margin-bottom: 1.25rem;
+                line-height: 1.1;
+                letter-spacing: -0.03em;
+                background: linear-gradient(to right, #60a5fa, #3b82f6);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
             }
             .hero-subtitle {
                 font-size: 1.5rem;
                 margin-bottom: 2rem;
-                opacity: 0.95;
+                opacity: 0.9;
+                font-weight: 400;
+                color: #e2e8f0;
+            }
+            .hero-description {
+                font-size: 1.125rem;
+                margin-bottom: 2rem;
+                color: #cbd5e1;
+                font-weight: 400;
+                line-height: 1.7;
+                max-width: 700px;
+                margin-left: auto;
+                margin-right: auto;
             }
             .feature-card {
                 background: white;
                 padding: 2rem;
                 border-radius: 12px;
-                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.06);
                 margin-bottom: 1.5rem;
-                border-left: 4px solid #667eea;
+                border-top: 3px solid #2563eb;
+                transition: all 0.3s ease;
+            }
+            .feature-card:hover {
+                box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+                transform: translateY(-2px);
             }
             .feature-icon {
-                font-size: 2.5rem;
+                font-size: 2.25rem;
                 margin-bottom: 1rem;
+                display: inline-block;
+                background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
             }
             .feature-title {
-                font-size: 1.4rem;
-                font-weight: bold;
-                color: #333;
-                margin-bottom: 0.5rem;
+                font-size: 1.25rem;
+                font-weight: 600;
+                color: #1e293b;
+                margin-bottom: 0.75rem;
+                letter-spacing: -0.01em;
             }
             .feature-text {
-                color: #666;
-                font-size: 1.1rem;
+                color: #64748b;
+                font-size: 1rem;
                 line-height: 1.6;
             }
             .cta-section {
                 text-align: center;
-                padding: 3rem 2rem;
-                background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+                padding: 4rem 2rem;
+                background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
                 color: white;
-                border-radius: 15px;
-                margin: 3rem 0;
+                border-radius: 16px;
+                margin: 4rem 0;
+                box-shadow: 0 20px 40px rgba(37, 99, 235, 0.15);
+            }
+            .cta-section h2 {
+                font-weight: 700;
+                letter-spacing: -0.02em;
+            }
+            .cta-section p {
+                opacity: 0.95;
             }
             .step-number {
                 display: inline-block;
-                width: 40px;
-                height: 40px;
-                background: #667eea;
+                width: 36px;
+                height: 36px;
+                background: #2563eb;
                 color: white;
                 border-radius: 50%;
                 text-align: center;
-                line-height: 40px;
-                font-weight: bold;
+                line-height: 36px;
+                font-weight: 600;
                 margin-right: 1rem;
+                font-size: 0.9rem;
+            }
+            .trust-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.5rem;
+                padding: 0.5rem 1rem;
+                background: #f0f9ff;
+                border: 1px solid #bfdbfe;
+                border-radius: 8px;
+                color: #1e40af;
+                font-size: 0.875rem;
+                font-weight: 500;
+                margin: 0.5rem;
             }
         </style>
         
         <div class="hero-section">
-            <div class="hero-title">🤖 LLM-Ready Generator</div>
-            <div class="hero-subtitle">Make Your Website AI-Discoverable in Minutes</div>
-            <p style="font-size: 1.2rem; margin-bottom: 2rem;">
-                Transform your website into LLM-ready content and boost your visibility in AI search results
+            <div class="hero-title">LLM-Ready Generator</div>
+            <div class="hero-subtitle">Professional AI Content Optimization for Your Website</div>
+            <p class="hero-description">
+                Enable AI assistants to accurately understand and represent your business.
+                Generate standardized llms.txt files that ensure your content is properly indexed
+                and referenced by ChatGPT, Claude, and other AI platforms.
             </p>
+            <div style="margin-top: 2rem;">
+                <span class="trust-badge">✓ Enterprise Ready</span>
+                <span class="trust-badge">✓ SEO Optimized</span>
+                <span class="trust-badge">✓ Industry Standard</span>
+            </div>
         </div>
     """, unsafe_allow_html=True)
     
     # What is it section
-    st.markdown("## 🎯 What is llms.txt?")
+    st.markdown("## What is llms.txt?")
     st.markdown("""
-    **llms.txt** is the new standard for making websites easily readable by AI assistants like ChatGPT, Claude, and Perplexity.
-    When users ask AI about your business, having an llms.txt file ensures your content is accurately represented.
-    """)
+    <div style="background: #f8fafc; padding: 2rem; border-radius: 12px; border-left: 4px solid #2563eb; margin: 2rem 0;">
+        <p style="color: #334155; font-size: 1.1rem; line-height: 1.8; margin: 0;">
+            <strong style="color: #1e293b;">llms.txt</strong> is the emerging industry standard for making websites machine-readable
+            by AI language models. As businesses increasingly rely on AI assistants for research and decision-making,
+            having a properly formatted llms.txt file ensures your organization's information is accurately represented
+            in AI-generated responses.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
     
     st.markdown("---")
     
     # Features
-    st.markdown("## ✨ Why Use Our Generator?")
+    st.markdown("## Why Choose Our Enterprise Solution?")
     
     col1, col2, col3 = st.columns(3)
     
@@ -447,9 +549,9 @@ def show_landing_page():
         st.markdown("""
         <div class="feature-card">
             <div class="feature-icon">⚡</div>
-            <div class="feature-title">Lightning Fast</div>
+            <div class="feature-title">Rapid Processing</div>
             <div class="feature-text">
-                Generate your llms.txt file in seconds. Just enter your URL and let us do the work.
+                Advanced crawling technology delivers comprehensive results in minutes, not hours. Optimized for enterprise-scale websites.
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -457,10 +559,10 @@ def show_landing_page():
     with col2:
         st.markdown("""
         <div class="feature-card">
-            <div class="feature-icon">🎨</div>
-            <div class="feature-title">Perfectly Formatted</div>
+            <div class="feature-icon">🎯</div>
+            <div class="feature-title">Standards Compliant</div>
             <div class="feature-text">
-                Get clean, optimized content that LLMs can easily understand and reference.
+                Generates properly structured llms.txt files following the latest specifications for maximum AI compatibility.
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -468,10 +570,10 @@ def show_landing_page():
     with col3:
         st.markdown("""
         <div class="feature-card">
-            <div class="feature-icon">🔒</div>
-            <div class="feature-title">100% Free</div>
+            <div class="feature-icon">🛡️</div>
+            <div class="feature-title">Secure & Private</div>
             <div class="feature-text">
-                No signup, no credit card, no limits. Generate as many llms.txt files as you need.
+                No data storage, no tracking, no account required. Your content remains completely private and secure.
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -479,21 +581,21 @@ def show_landing_page():
     st.markdown("---")
     
     # How it works
-    st.markdown("## 🚀 How It Works")
+    st.markdown("## Implementation Process")
     
     st.markdown("""
-    <div style="padding: 2rem; background: #f8f9fa; color: #333; border-radius: 10px; margin: 2rem 0;">
-        <p style="font-size: 1.2rem; margin-bottom: 2rem;">
-            <span class="step-number">1</span> <strong>Enter your website URL</strong> - We'll crawl your site
+    <div style="padding: 2.5rem; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; margin: 2rem 0;">
+        <p style="font-size: 1.125rem; margin-bottom: 2rem; color: #334155;">
+            <span class="step-number">1</span> <strong style="color: #1e293b;">Submit Website URL</strong> - Provide your domain for comprehensive analysis
         </p>
-        <p style="font-size: 1.2rem; margin-bottom: 2rem;">
-            <span class="step-number">2</span> <strong>Wait a few seconds</strong> - Our AI processes your content
+        <p style="font-size: 1.125rem; margin-bottom: 2rem; color: #334155;">
+            <span class="step-number">2</span> <strong style="color: #1e293b;">Automated Processing</strong> - Our system crawls and structures your content
         </p>
-        <p style="font-size: 1.2rem; margin-bottom: 2rem;">
-            <span class="step-number">3</span> <strong>Download your files</strong> - Get llms.txt and supporting files
+        <p style="font-size: 1.125rem; margin-bottom: 2rem; color: #334155;">
+            <span class="step-number">3</span> <strong style="color: #1e293b;">Download Package</strong> - Receive complete llms.txt and metadata files
         </p>
-        <p style="font-size: 1.2rem;">
-            <span class="step-number">4</span> <strong>Upload to your site</strong> - Add llms.txt to your website root
+        <p style="font-size: 1.125rem; color: #334155;">
+            <span class="step-number">4</span> <strong style="color: #1e293b;">Deploy to Production</strong> - Upload llms.txt to your website root directory
         </p>
     </div>
     """, unsafe_allow_html=True)
@@ -501,46 +603,62 @@ def show_landing_page():
     st.markdown("---")
     
     # Benefits
-    st.markdown("## 💡 Benefits for Your Business")
+    st.markdown("## Key Business Benefits")
     
     col1, col2 = st.columns(2)
     
     with col1:
         st.markdown("""
-        **🔍 Increased Visibility**
-        - Be discovered when people ask AI about your industry
-        - Stand out in AI-powered search results
-        - Get accurate representation of your business
-        """)
+        <div style="background: white; padding: 1.5rem; border-radius: 10px; margin-bottom: 1rem; border-left: 3px solid #2563eb;">
+            <h4 style="color: #1e293b; margin-bottom: 0.75rem; font-weight: 600;">📊 Enhanced AI Visibility</h4>
+            <ul style="color: #475569; margin: 0; padding-left: 1.25rem;">
+                <li style="margin-bottom: 0.5rem;">Ensure accurate representation in AI-generated responses</li>
+                <li style="margin-bottom: 0.5rem;">Improve discoverability in AI-powered searches</li>
+                <li style="margin-bottom: 0.5rem;">Control your narrative in AI conversations</li>
+            </ul>
+        </div>
+        """, unsafe_allow_html=True)
         
         st.markdown("""
-        **📈 Better SEO for AI Era**
-        - Future-proof your online presence
-        - Optimize for the next generation of search
-        - Stay ahead of competitors
-        """)
+        <div style="background: white; padding: 1.5rem; border-radius: 10px; margin-bottom: 1rem; border-left: 3px solid #2563eb;">
+            <h4 style="color: #1e293b; margin-bottom: 0.75rem; font-weight: 600;">🚀 Competitive Advantage</h4>
+            <ul style="color: #475569; margin: 0; padding-left: 1.25rem;">
+                <li style="margin-bottom: 0.5rem;">Stay ahead of industry trends</li>
+                <li style="margin-bottom: 0.5rem;">Future-proof your digital presence</li>
+                <li style="margin-bottom: 0.5rem;">Lead in AI-first market positioning</li>
+            </ul>
+        </div>
+        """, unsafe_allow_html=True)
     
     with col2:
         st.markdown("""
-        **⚡ Save Time & Resources**
-        - No manual content formatting needed
-        - Automated content extraction
-        - Ready to deploy in minutes
-        """)
+        <div style="background: white; padding: 1.5rem; border-radius: 10px; margin-bottom: 1rem; border-left: 3px solid #2563eb;">
+            <h4 style="color: #1e293b; margin-bottom: 0.75rem; font-weight: 600;">⚙️ Operational Efficiency</h4>
+            <ul style="color: #475569; margin: 0; padding-left: 1.25rem;">
+                <li style="margin-bottom: 0.5rem;">Eliminate manual content preparation</li>
+                <li style="margin-bottom: 0.5rem;">Automated updates and maintenance</li>
+                <li style="margin-bottom: 0.5rem;">Seamless integration with existing infrastructure</li>
+            </ul>
+        </div>
+        """, unsafe_allow_html=True)
         
         st.markdown("""
-        **🤝 Better AI Integration**
-        - Help AI assistants understand your content
-        - Provide structured data for LLMs
-        - Improve accuracy of AI responses about you
-        """)
+        <div style="background: white; padding: 1.5rem; border-radius: 10px; margin-bottom: 1rem; border-left: 3px solid #2563eb;">
+            <h4 style="color: #1e293b; margin-bottom: 0.75rem; font-weight: 600;">📈 ROI & Growth</h4>
+            <ul style="color: #475569; margin: 0; padding-left: 1.25rem;">
+                <li style="margin-bottom: 0.5rem;">Increase qualified traffic from AI platforms</li>
+                <li style="margin-bottom: 0.5rem;">Improve conversion through accurate AI representation</li>
+                <li style="margin-bottom: 0.5rem;">Measurable impact on digital engagement</li>
+            </ul>
+        </div>
+        """, unsafe_allow_html=True)
     
     # CTA Section
     st.markdown("""
     <div class="cta-section">
-        <h2 style="font-size: 2.5rem; margin-bottom: 1rem;">Ready to Get Started?</h2>
-        <p style="font-size: 1.3rem; margin-bottom: 2rem;">
-            Generate your llms.txt file now and make your website AI-ready!
+        <h2 style="font-size: 2.25rem; margin-bottom: 1.25rem; font-weight: 700;">Ready to Optimize for AI?</h2>
+        <p style="font-size: 1.125rem; margin-bottom: 2.5rem; opacity: 0.95;">
+            Start generating professional llms.txt files for your organization today.
         </p>
     </div>
     """, unsafe_allow_html=True)
@@ -548,7 +666,7 @@ def show_landing_page():
     # Large CTA button
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        if st.button("🚀 Launch Generator", type="primary", use_container_width=True):
+        if st.button("Get Started Now →", type="primary", use_container_width=True, help="Launch the LLM-Ready Generator"):
             st.session_state.page = 'generator'
             st.rerun()
     
@@ -556,10 +674,10 @@ def show_landing_page():
     
     # Footer
     st.markdown("""
-    <div style="text-align: center; padding: 2rem; color: #666;">
-        <p>Made with ❤️ for the AI-first web • Powered by Mdream</p>
-        <p style="font-size: 0.9rem; margin-top: 1rem;">
-            Questions? Contact us or check out the <a href="https://llmstxt.org" target="_blank">llms.txt documentation</a>
+    <div style="text-align: center; padding: 3rem 2rem 2rem; color: #64748b; border-top: 1px solid #e2e8f0; margin-top: 4rem;">
+        <p style="font-weight: 500; color: #475569;">Powered by Advanced Web Crawling Technology</p>
+        <p style="font-size: 0.875rem; margin-top: 1rem;">
+            © 2024 LLM-Ready Generator • <a href="https://llmstxt.org" target="_blank" style="color: #2563eb; text-decoration: none;">Documentation</a> • Professional Support Available
         </p>
     </div>
     """, unsafe_allow_html=True)
@@ -581,72 +699,72 @@ def show_generator():
     # Header
     st.markdown("""
         <div class="main-header">
-            <h1>🤖 LLM-Ready Generator</h1>
-            <p>Transform any website into LLM-ready content with Mdream</p>
+            <h1 style="font-size: 2.5rem; margin-bottom: 0.75rem;">LLM-Ready Generator</h1>
+            <p style="font-size: 1.125rem;">Professional AI Content Optimization Platform</p>
         </div>
     """, unsafe_allow_html=True)
 
     # Sidebar configuration
     with st.sidebar:
-        st.markdown('<div class="sidebar-header">⚙️ Configuration</div>', unsafe_allow_html=True)
+        st.markdown('<div class="sidebar-header">Configuration Settings</div>', unsafe_allow_html=True)
 
         # URL Input
         origin_url = st.text_input(
-            "🌐 Website URL",
+            "Website URL",
             placeholder="https://example.com",
-            help="Enter the root URL of the website to crawl"
+            help="Enter the complete URL of your website"
         )
 
         # Output directory
         output_dir = st.text_input(
-            "📁 Output Directory",
+            "Output Directory",
             value="./output",
-            help="Directory where generated files will be saved"
+            help="Specify the directory for generated files"
         )
 
         # Advanced options
-        with st.expander("🔧 Advanced Options"):
+        with st.expander("Advanced Options"):
             include_patterns = st.text_input(
-                "✅ Include Patterns (CSV)",
+                "Include Patterns (CSV)",
                 placeholder="docs,faq,pricing",
-                help="Comma-separated list of path patterns to include"
+                help="Specify path patterns to include"
             )
 
             exclude_patterns = st.text_input(
-                "❌ Exclude Patterns (CSV)",
+                "Exclude Patterns (CSV)",
                 placeholder="login,cart,admin",
-                help="Comma-separated list of path patterns to exclude"
+                help="Specify path patterns to exclude"
             )
 
             use_playwright = st.checkbox(
-                "🎭 Use Playwright",
+                "Enable JavaScript Rendering",
                 value=False,
-                help="Use Playwright for better JavaScript rendering"
+                help="Use Playwright for dynamic content"
             )
 
             max_pages = st.slider(
-                "📄 Max Pages",
+                "Maximum Pages",
                 min_value=10,
                 max_value=1000,
                 value=100,
-                help="Maximum number of pages to crawl"
+                help="Limit the number of pages to process"
             )
 
             timeout = st.slider(
-                "⏱️ Timeout (seconds)",
+                "Timeout (seconds)",
                 min_value=60,
                 max_value=600,
                 value=300,
-                help="Timeout for the crawling process"
+                help="Maximum processing time"
             )
 
     # Main content area
     col1, col2 = st.columns([2, 1])
 
     with col1:
-        st.subheader("🚀 Generate LLM-Ready Content")
+        st.subheader("Generate LLM-Ready Content")
 
-        if st.button("🎯 Start Generation", type="primary", use_container_width=True):
+        if st.button("Start Generation →", type="primary", use_container_width=True):
             if not origin_url:
                 st.error("❌ Please enter a website URL")
                 return
@@ -810,7 +928,7 @@ def show_generator():
                 st.error("❌ Generation failed. Check the logs above for details.")
 
     with col2:
-        st.subheader("📥 Download Results")
+        st.subheader("Download Package")
 
         # Only show downloads if a crawl was just completed in this session
         if st.session_state.crawl_completed and st.session_state.last_output_dir:
@@ -868,33 +986,44 @@ def show_generator():
 
         # Instructions
         st.markdown("---")
-        st.subheader("📖 How to Use")
+        st.subheader("Implementation Guide")
 
         st.markdown("""
-        **🎯 Quick Start:**
-        1. Enter the website URL you want to crawl
-        2. Configure options in the sidebar (optional)
-        3. Click "Start Generation"
-        4. Wait for completion (progress shown above)
-        5. Download your LLM-ready files
-
-        **📁 Generated Files:**
-        - `llms.txt` - Concise summary for LLMs
-        - `llms-full.txt` - Complete content with metadata
-        - `manifest.json` - Generation metadata
-        - `md/` - Individual markdown files
-
-        **🤖 Ready for LLMs:**
-        Feed the generated content to ChatGPT, Claude, or other LLMs for:
-        - Company research
-        - Content analysis
-        - Q&A about the website
-        - Documentation search
-        """)
+        <div style="background: #f8fafc; padding: 1.5rem; border-radius: 8px; border-left: 3px solid #2563eb;">
+            <h4 style="color: #1e293b; margin-bottom: 1rem;">Quick Start Process:</h4>
+            <ol style="color: #475569; margin: 0; padding-left: 1.25rem;">
+                <li style="margin-bottom: 0.5rem;">Enter your website URL in the configuration panel</li>
+                <li style="margin-bottom: 0.5rem;">Adjust advanced settings if needed</li>
+                <li style="margin-bottom: 0.5rem;">Click "Start Generation" to begin processing</li>
+                <li style="margin-bottom: 0.5rem;">Monitor progress in real-time</li>
+                <li style="margin-bottom: 0.5rem;">Download the complete package when ready</li>
+            </ol>
+        </div>
+        
+        <div style="margin-top: 1.5rem;">
+            <h4 style="color: #1e293b; margin-bottom: 0.75rem;">Generated Package Contents:</h4>
+            <ul style="color: #475569; padding-left: 1.25rem;">
+                <li><strong>llms.txt</strong> - Optimized summary for AI consumption</li>
+                <li><strong>llms-full.txt</strong> - Comprehensive content with metadata</li>
+                <li><strong>manifest.json</strong> - Processing metadata and statistics</li>
+                <li><strong>markdown files</strong> - Individual page content</li>
+            </ul>
+        </div>
+        
+        <div style="margin-top: 1.5rem;">
+            <h4 style="color: #1e293b; margin-bottom: 0.75rem;">Use Cases:</h4>
+            <ul style="color: #475569; padding-left: 1.25rem;">
+                <li>Enterprise knowledge management</li>
+                <li>AI-powered customer support</li>
+                <li>Competitive intelligence gathering</li>
+                <li>Content optimization and analysis</li>
+            </ul>
+        </div>
+        """, unsafe_allow_html=True)
 
         # System status
         st.markdown("---")
-        st.subheader("🔧 System Status")
+        st.subheader("System Status")
 
         docker_available = check_docker_available()
         npx_available = check_npx_available()
@@ -903,15 +1032,15 @@ def show_generator():
 
         with status_col1:
             if docker_available:
-                st.success("🐳 Docker: Available (Recommended)")
+                st.success("✓ Docker: Available")
             else:
-                st.warning("🐳 Docker: Not available")
+                st.warning("⚠ Docker: Not Available")
 
         with status_col2:
             if npx_available:
-                st.success("📦 npx: Available (Fallback)")
+                st.success("✓ Node.js: Available")
             else:
-                st.warning("📦 npx: Not available")
+                st.warning("⚠ Node.js: Not Available")
 
 
 def main():
