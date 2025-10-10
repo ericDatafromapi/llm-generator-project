@@ -228,91 +228,263 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS for professional styling
+# Custom CSS for modern dark theme styling
 st.markdown("""
 <style>
-    /* Import professional fonts */
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+    /* Import Inter font */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    
+    /* CSS Variables - Dark Theme */
+    :root {
+        --background: hsl(240, 20%, 8%);
+        --foreground: hsl(240, 10%, 98%);
+        --card: hsl(240, 18%, 12%);
+        --card-foreground: hsl(240, 10%, 98%);
+        --primary: hsl(260, 60%, 55%);
+        --primary-glow: hsl(280, 70%, 65%);
+        --accent: hsl(280, 70%, 60%);
+        --muted: hsl(240, 15%, 20%);
+        --muted-foreground: hsl(240, 10%, 65%);
+        --border: hsl(240, 15%, 20%);
+    }
     
     /* Global styles */
     * {
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
     }
     
+    /* Streamlit overrides for dark theme */
+    .stApp {
+        background: var(--background);
+        color: var(--foreground);
+    }
+    
+    /* Gradient animations */
+    @keyframes gradient-shift {
+        0%, 100% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+    }
+    
+    @keyframes glow {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+    
+    @keyframes fade-in {
+        0% { opacity: 0; transform: translateY(20px); }
+        100% { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Main header with gradient and glow */
     .main-header {
+        position: relative;
         text-align: center;
-        background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
-        color: white;
+        background: linear-gradient(135deg, hsl(260, 60%, 25%) 0%, hsl(240, 50%, 20%) 100%);
+        color: var(--foreground);
         padding: 3rem 2rem;
-        border-radius: 12px;
+        border-radius: 16px;
         margin-bottom: 2rem;
-        box-shadow: 0 10px 30px rgba(37, 99, 235, 0.2);
+        overflow: hidden;
+        border: 1px solid var(--border);
+        animation: fade-in 0.6s ease-out;
+    }
+    
+    .main-header::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 600px;
+        height: 600px;
+        background: radial-gradient(circle, hsl(260, 60%, 55%, 0.3) 0%, transparent 70%);
+        animation: glow 3s ease-in-out infinite;
+        pointer-events: none;
     }
     
     .main-header h1 {
+        position: relative;
         font-weight: 700;
         letter-spacing: -0.02em;
+        background: linear-gradient(to right, hsl(260, 60%, 70%), hsl(280, 70%, 75%), hsl(280, 70%, 60%));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        z-index: 1;
     }
     
     .main-header p {
+        position: relative;
         opacity: 0.95;
         font-weight: 400;
+        color: hsl(240, 10%, 85%);
+        z-index: 1;
     }
     
+    /* Status cards with glassmorphism */
     .status-card {
         padding: 1rem;
-        border-radius: 8px;
+        border-radius: 12px;
         margin: 1rem 0;
-        border-left: 4px solid;
+        border-left: 3px solid;
+        backdrop-filter: blur(10px);
+        animation: fade-in 0.4s ease-out;
     }
     
     .status-success {
-        background-color: #f0fdf4;
-        border-color: #16a34a;
-        color: #14532d;
+        background: linear-gradient(135deg, hsla(142, 76%, 36%, 0.15), hsla(142, 76%, 36%, 0.05));
+        border-color: hsl(142, 76%, 46%);
+        color: hsl(142, 76%, 76%);
     }
     
     .status-error {
-        background-color: #fef2f2;
-        border-color: #dc2626;
-        color: #7f1d1d;
+        background: linear-gradient(135deg, hsla(0, 72%, 51%, 0.15), hsla(0, 72%, 51%, 0.05));
+        border-color: hsl(0, 72%, 61%);
+        color: hsl(0, 72%, 76%);
     }
     
     .status-info {
-        background-color: #eff6ff;
-        border-color: #2563eb;
-        color: #1e3a8a;
+        background: linear-gradient(135deg, hsla(260, 60%, 55%, 0.15), hsla(260, 60%, 55%, 0.05));
+        border-color: var(--primary);
+        color: hsl(260, 60%, 75%);
     }
     
-    .file-preview {
-        background-color: #f9fafb;
-        padding: 1.25rem;
-        border-radius: 8px;
-        border: 1px solid #e5e7eb;
-        font-family: 'IBM Plex Mono', 'Courier New', monospace;
-        white-space: pre-wrap;
-        max-height: 300px;
-        overflow-y: auto;
+    /* Sidebar styling */
+    [data-testid="stSidebar"] {
+        background: var(--card);
+        border-right: 1px solid var(--border);
     }
     
     .sidebar-header {
         font-size: 1.1rem;
         font-weight: 600;
         margin-bottom: 1.25rem;
-        color: #1f2937;
+        color: var(--foreground);
         letter-spacing: -0.01em;
     }
     
-    /* Button styling */
-    .stButton > button {
-        font-weight: 500;
-        letter-spacing: -0.01em;
+    /* Input fields */
+    .stTextInput input, .stSelectbox select, .stNumberInput input {
+        background: var(--muted) !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 8px !important;
+        color: var(--foreground) !important;
         transition: all 0.2s ease;
     }
     
+    .stTextInput input:focus, .stSelectbox select:focus, .stNumberInput input:focus {
+        border-color: var(--primary) !important;
+        box-shadow: 0 0 0 1px var(--primary) !important;
+    }
+    
+    /* Buttons with gradient */
+    .stButton > button {
+        background: linear-gradient(135deg, hsl(260, 60%, 55%), hsl(280, 70%, 60%)) !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 8px !important;
+        font-weight: 600 !important;
+        letter-spacing: -0.01em !important;
+        padding: 0.75rem 1.5rem !important;
+        transition: all 0.3s ease !important;
+        box-shadow: 0 4px 12px hsla(260, 60%, 55%, 0.3) !important;
+    }
+    
     .stButton > button:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 20px hsla(260, 60%, 55%, 0.4) !important;
+    }
+    
+    .stButton > button[kind="secondary"] {
+        background: var(--muted) !important;
+        border: 1px solid var(--border) !important;
+    }
+    
+    /* Progress bar */
+    .stProgress > div > div {
+        background: linear-gradient(90deg, var(--primary), var(--accent)) !important;
+    }
+    
+    /* Metrics */
+    [data-testid="stMetricValue"] {
+        color: var(--foreground) !important;
+        font-weight: 700 !important;
+    }
+    
+    /* Cards and containers */
+    .element-container {
+        animation: fade-in 0.5s ease-out;
+    }
+    
+    /* Expander */
+    .streamlit-expanderHeader {
+        background: var(--card) !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 8px !important;
+        color: var(--foreground) !important;
+    }
+    
+    /* Text areas */
+    .stTextArea textarea {
+        background: var(--muted) !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 8px !important;
+        color: var(--foreground) !important;
+        font-family: 'Courier New', monospace !important;
+    }
+    
+    /* Tabs */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 8px;
+        background: var(--card);
+        padding: 4px;
+        border-radius: 8px;
+    }
+    
+    .stTabs [data-baseweb="tab"] {
+        background: transparent;
+        border-radius: 6px;
+        color: var(--muted-foreground);
+        font-weight: 500;
+    }
+    
+    .stTabs [aria-selected="true"] {
+        background: var(--muted) !important;
+        color: var(--foreground) !important;
+    }
+    
+    /* Download buttons */
+    .stDownloadButton > button {
+        background: var(--muted) !important;
+        border: 1px solid var(--border) !important;
+        color: var(--foreground) !important;
+        border-radius: 8px !important;
+        font-weight: 500 !important;
+        transition: all 0.2s ease !important;
+    }
+    
+    .stDownloadButton > button:hover {
+        border-color: var(--primary) !important;
+        background: var(--card) !important;
+    }
+    
+    /* Checkbox and radio */
+    .stCheckbox, .stRadio {
+        color: var(--foreground) !important;
+    }
+    
+    /* Spinner */
+    .stSpinner > div {
+        border-top-color: var(--primary) !important;
+    }
+    
+    /* Slider */
+    .stSlider [data-baseweb="slider"] {
+        background: var(--muted);
+    }
+    
+    .stSlider [role="slider"] {
+        background: var(--primary) !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -395,97 +567,185 @@ def show_landing_page():
     st.markdown("""
         <style>
             .hero-section {
+                position: relative;
                 text-align: center;
                 padding: 5rem 2rem;
-                background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-                color: white;
+                background: linear-gradient(135deg, hsl(260, 60%, 15%) 0%, hsl(240, 50%, 12%) 100%);
+                color: var(--foreground);
                 border-radius: 16px;
                 margin-bottom: 4rem;
-                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+                overflow: hidden;
+                border: 1px solid var(--border);
+                animation: fade-in 0.8s ease-out;
             }
+            
+            .hero-section::before {
+                content: '';
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 600px;
+                height: 600px;
+                background: radial-gradient(circle, hsl(260, 60%, 55%, 0.3) 0%, transparent 70%);
+                animation: glow 3s ease-in-out infinite;
+                pointer-events: none;
+            }
+            
+            .hero-section::after {
+                content: '';
+                position: absolute;
+                inset: 0;
+                background: linear-gradient(135deg,
+                    hsla(260, 60%, 55%, 0.1) 0%,
+                    transparent 50%,
+                    hsla(280, 70%, 60%, 0.1) 100%);
+                animation: gradient-shift 8s ease infinite;
+                background-size: 400% 400%;
+                pointer-events: none;
+            }
+            
+            .hero-content {
+                position: relative;
+                z-index: 1;
+            }
+            
             .hero-title {
                 font-size: 3.5rem;
                 font-weight: 800;
                 margin-bottom: 1.25rem;
                 line-height: 1.1;
                 letter-spacing: -0.03em;
-                background: linear-gradient(to right, #60a5fa, #3b82f6);
+            }
+            
+            .gradient-text {
+                background: linear-gradient(to right,
+                    hsl(260, 60%, 70%),
+                    hsl(280, 70%, 75%),
+                    hsl(280, 70%, 60%));
                 -webkit-background-clip: text;
                 -webkit-text-fill-color: transparent;
                 background-clip: text;
+                display: inline-block;
             }
+            
             .hero-subtitle {
                 font-size: 1.5rem;
                 margin-bottom: 2rem;
-                opacity: 0.9;
+                opacity: 0.95;
                 font-weight: 400;
-                color: #e2e8f0;
+                color: hsl(240, 10%, 85%);
             }
+            
             .hero-description {
                 font-size: 1.125rem;
                 margin-bottom: 2rem;
-                color: #cbd5e1;
+                color: hsl(240, 10%, 75%);
                 font-weight: 400;
                 line-height: 1.7;
                 max-width: 700px;
                 margin-left: auto;
                 margin-right: auto;
             }
+            
             .feature-card {
-                background: white;
+                background: var(--card);
                 padding: 2rem;
                 border-radius: 12px;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.06);
+                border: 1px solid var(--border);
                 margin-bottom: 1.5rem;
-                border-top: 3px solid #2563eb;
                 transition: all 0.3s ease;
+                position: relative;
+                overflow: hidden;
+                backdrop-filter: blur(10px);
             }
+            
+            .feature-card::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 3px;
+                background: linear-gradient(90deg, var(--primary), var(--accent));
+            }
+            
             .feature-card:hover {
-                box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-                transform: translateY(-2px);
+                border-color: hsl(260, 60%, 45%);
+                transform: translateY(-4px);
+                box-shadow: 0 12px 28px hsla(260, 60%, 55%, 0.2);
             }
+            
             .feature-icon {
                 font-size: 2.25rem;
                 margin-bottom: 1rem;
                 display: inline-block;
-                background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+                background: linear-gradient(135deg, var(--primary), var(--accent));
                 -webkit-background-clip: text;
                 -webkit-text-fill-color: transparent;
                 background-clip: text;
             }
+            
             .feature-title {
                 font-size: 1.25rem;
                 font-weight: 600;
-                color: #1e293b;
+                color: var(--foreground);
                 margin-bottom: 0.75rem;
                 letter-spacing: -0.01em;
             }
+            
             .feature-text {
-                color: #64748b;
+                color: var(--muted-foreground);
                 font-size: 1rem;
                 line-height: 1.6;
             }
+            
             .cta-section {
+                position: relative;
                 text-align: center;
                 padding: 4rem 2rem;
-                background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
-                color: white;
+                background: linear-gradient(135deg, hsl(260, 60%, 18%) 0%, hsl(280, 60%, 20%) 100%);
+                color: var(--foreground);
                 border-radius: 16px;
                 margin: 4rem 0;
-                box-shadow: 0 20px 40px rgba(37, 99, 235, 0.15);
+                overflow: hidden;
+                border: 1px solid var(--border);
             }
+            
+            .cta-section::before {
+                content: '';
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 500px;
+                height: 500px;
+                background: radial-gradient(circle, hsl(280, 70%, 60%, 0.2) 0%, transparent 70%);
+                animation: glow 3s ease-in-out infinite;
+                pointer-events: none;
+            }
+            
+            .cta-content {
+                position: relative;
+                z-index: 1;
+            }
+            
             .cta-section h2 {
                 font-weight: 700;
                 letter-spacing: -0.02em;
+                color: var(--foreground);
             }
+            
             .cta-section p {
-                opacity: 0.95;
+                opacity: 0.9;
+                color: hsl(240, 10%, 80%);
             }
+            
             .step-number {
                 display: inline-block;
                 width: 36px;
                 height: 36px;
-                background: #2563eb;
+                background: linear-gradient(135deg, var(--primary), var(--accent));
                 color: white;
                 border-radius: 50%;
                 text-align: center;
@@ -493,34 +753,88 @@ def show_landing_page():
                 font-weight: 600;
                 margin-right: 1rem;
                 font-size: 0.9rem;
+                box-shadow: 0 4px 12px hsla(260, 60%, 55%, 0.3);
             }
+            
             .trust-badge {
                 display: inline-flex;
                 align-items: center;
                 gap: 0.5rem;
                 padding: 0.5rem 1rem;
-                background: #f0f9ff;
-                border: 1px solid #bfdbfe;
+                background: hsla(260, 60%, 55%, 0.15);
+                border: 1px solid hsla(260, 60%, 55%, 0.3);
                 border-radius: 8px;
-                color: #1e40af;
+                color: hsl(260, 60%, 75%);
                 font-size: 0.875rem;
                 font-weight: 500;
                 margin: 0.5rem;
+                backdrop-filter: blur(10px);
+                transition: all 0.3s ease;
+            }
+            
+            .trust-badge:hover {
+                background: hsla(260, 60%, 55%, 0.25);
+                border-color: hsla(260, 60%, 55%, 0.5);
+            }
+            
+            .info-box {
+                background: var(--card);
+                border: 1px solid var(--border);
+                border-left: 3px solid var(--primary);
+                padding: 1.5rem;
+                border-radius: 12px;
+                margin: 2rem 0;
+                backdrop-filter: blur(10px);
+            }
+            
+            .benefit-card {
+                background: var(--card);
+                border: 1px solid var(--border);
+                padding: 1.5rem;
+                border-radius: 10px;
+                margin-bottom: 1rem;
+                transition: all 0.3s ease;
+            }
+            
+            .benefit-card:hover {
+                border-color: hsl(260, 60%, 45%);
+                box-shadow: 0 8px 20px hsla(260, 60%, 55%, 0.15);
+            }
+            
+            .benefit-card h4 {
+                color: var(--foreground);
+                margin-bottom: 0.75rem;
+                font-weight: 600;
+            }
+            
+            .benefit-card ul {
+                color: var(--muted-foreground);
+                margin: 0;
+                padding-left: 1.25rem;
+            }
+            
+            .benefit-card li {
+                margin-bottom: 0.5rem;
+                line-height: 1.6;
             }
         </style>
         
         <div class="hero-section">
-            <div class="hero-title">LLM-Ready Generator</div>
-            <div class="hero-subtitle">Professional AI Content Optimization for Your Website</div>
-            <p class="hero-description">
-                Enable AI assistants to accurately understand and represent your business.
-                Generate standardized llms.txt files that ensure your content is properly indexed
-                and referenced by ChatGPT, Claude, and other AI platforms.
-            </p>
-            <div style="margin-top: 2rem;">
-                <span class="trust-badge">✓ Enterprise Ready</span>
-                <span class="trust-badge">✓ SEO Optimized</span>
-                <span class="trust-badge">✓ Industry Standard</span>
+            <div class="hero-content">
+                <div class="hero-title">
+                    Make Your Site <span class="gradient-text">AI-Ready</span>
+                </div>
+                <div class="hero-subtitle">Professional LLM Content Optimization Platform</div>
+                <p class="hero-description">
+                    Enable AI assistants to accurately understand and represent your business.
+                    Generate standardized <strong>llms.txt</strong> files that ensure your content is properly indexed
+                    and referenced by ChatGPT, Claude, and other AI platforms.
+                </p>
+                <div style="margin-top: 2rem;">
+                    <span class="trust-badge">✓ Lightning Fast</span>
+                    <span class="trust-badge">✓ Standards Compliant</span>
+                    <span class="trust-badge">✓ 100% Secure</span>
+                </div>
             </div>
         </div>
     """, unsafe_allow_html=True)
@@ -528,9 +842,9 @@ def show_landing_page():
     # What is it section
     st.markdown("## What is llms.txt?")
     st.markdown("""
-    <div style="background: #f8fafc; padding: 2rem; border-radius: 12px; border-left: 4px solid #2563eb; margin: 2rem 0;">
-        <p style="color: #334155; font-size: 1.1rem; line-height: 1.8; margin: 0;">
-            <strong style="color: #1e293b;">llms.txt</strong> is the emerging industry standard for making websites machine-readable
+    <div class="info-box">
+        <p style="color: var(--muted-foreground); font-size: 1.1rem; line-height: 1.8; margin: 0;">
+            <strong style="color: var(--foreground);">llms.txt</strong> is the emerging industry standard for making websites machine-readable
             by AI language models. As businesses increasingly rely on AI assistants for research and decision-making,
             having a properly formatted llms.txt file ensures your organization's information is accurately represented
             in AI-generated responses.
@@ -584,18 +898,18 @@ def show_landing_page():
     st.markdown("## Implementation Process")
     
     st.markdown("""
-    <div style="padding: 2.5rem; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; margin: 2rem 0;">
-        <p style="font-size: 1.125rem; margin-bottom: 2rem; color: #334155;">
-            <span class="step-number">1</span> <strong style="color: #1e293b;">Submit Website URL</strong> - Provide your domain for comprehensive analysis
+    <div class="info-box" style="padding: 2.5rem;">
+        <p style="font-size: 1.125rem; margin-bottom: 2rem; color: var(--muted-foreground);">
+            <span class="step-number">1</span> <strong style="color: var(--foreground);">Submit Website URL</strong> - Provide your domain for comprehensive analysis
         </p>
-        <p style="font-size: 1.125rem; margin-bottom: 2rem; color: #334155;">
-            <span class="step-number">2</span> <strong style="color: #1e293b;">Automated Processing</strong> - Our system crawls and structures your content
+        <p style="font-size: 1.125rem; margin-bottom: 2rem; color: var(--muted-foreground);">
+            <span class="step-number">2</span> <strong style="color: var(--foreground);">Automated Processing</strong> - Our system crawls and structures your content
         </p>
-        <p style="font-size: 1.125rem; margin-bottom: 2rem; color: #334155;">
-            <span class="step-number">3</span> <strong style="color: #1e293b;">Download Package</strong> - Receive complete llms.txt and metadata files
+        <p style="font-size: 1.125rem; margin-bottom: 2rem; color: var(--muted-foreground);">
+            <span class="step-number">3</span> <strong style="color: var(--foreground);">Download Package</strong> - Receive complete llms.txt and metadata files
         </p>
-        <p style="font-size: 1.125rem; color: #334155;">
-            <span class="step-number">4</span> <strong style="color: #1e293b;">Deploy to Production</strong> - Upload llms.txt to your website root directory
+        <p style="font-size: 1.125rem; color: var(--muted-foreground);">
+            <span class="step-number">4</span> <strong style="color: var(--foreground);">Deploy to Production</strong> - Upload llms.txt to your website root directory
         </p>
     </div>
     """, unsafe_allow_html=True)
@@ -609,46 +923,46 @@ def show_landing_page():
     
     with col1:
         st.markdown("""
-        <div style="background: white; padding: 1.5rem; border-radius: 10px; margin-bottom: 1rem; border-left: 3px solid #2563eb;">
-            <h4 style="color: #1e293b; margin-bottom: 0.75rem; font-weight: 600;">📊 Enhanced AI Visibility</h4>
-            <ul style="color: #475569; margin: 0; padding-left: 1.25rem;">
-                <li style="margin-bottom: 0.5rem;">Ensure accurate representation in AI-generated responses</li>
-                <li style="margin-bottom: 0.5rem;">Improve discoverability in AI-powered searches</li>
-                <li style="margin-bottom: 0.5rem;">Control your narrative in AI conversations</li>
+        <div class="benefit-card">
+            <h4>📊 Enhanced AI Visibility</h4>
+            <ul>
+                <li>Ensure accurate representation in AI-generated responses</li>
+                <li>Improve discoverability in AI-powered searches</li>
+                <li>Control your narrative in AI conversations</li>
             </ul>
         </div>
         """, unsafe_allow_html=True)
         
         st.markdown("""
-        <div style="background: white; padding: 1.5rem; border-radius: 10px; margin-bottom: 1rem; border-left: 3px solid #2563eb;">
-            <h4 style="color: #1e293b; margin-bottom: 0.75rem; font-weight: 600;">🚀 Competitive Advantage</h4>
-            <ul style="color: #475569; margin: 0; padding-left: 1.25rem;">
-                <li style="margin-bottom: 0.5rem;">Stay ahead of industry trends</li>
-                <li style="margin-bottom: 0.5rem;">Future-proof your digital presence</li>
-                <li style="margin-bottom: 0.5rem;">Lead in AI-first market positioning</li>
+        <div class="benefit-card">
+            <h4>🚀 Competitive Advantage</h4>
+            <ul>
+                <li>Stay ahead of industry trends</li>
+                <li>Future-proof your digital presence</li>
+                <li>Lead in AI-first market positioning</li>
             </ul>
         </div>
         """, unsafe_allow_html=True)
     
     with col2:
         st.markdown("""
-        <div style="background: white; padding: 1.5rem; border-radius: 10px; margin-bottom: 1rem; border-left: 3px solid #2563eb;">
-            <h4 style="color: #1e293b; margin-bottom: 0.75rem; font-weight: 600;">⚙️ Operational Efficiency</h4>
-            <ul style="color: #475569; margin: 0; padding-left: 1.25rem;">
-                <li style="margin-bottom: 0.5rem;">Eliminate manual content preparation</li>
-                <li style="margin-bottom: 0.5rem;">Automated updates and maintenance</li>
-                <li style="margin-bottom: 0.5rem;">Seamless integration with existing infrastructure</li>
+        <div class="benefit-card">
+            <h4>⚙️ Operational Efficiency</h4>
+            <ul>
+                <li>Eliminate manual content preparation</li>
+                <li>Automated updates and maintenance</li>
+                <li>Seamless integration with existing infrastructure</li>
             </ul>
         </div>
         """, unsafe_allow_html=True)
         
         st.markdown("""
-        <div style="background: white; padding: 1.5rem; border-radius: 10px; margin-bottom: 1rem; border-left: 3px solid #2563eb;">
-            <h4 style="color: #1e293b; margin-bottom: 0.75rem; font-weight: 600;">📈 ROI & Growth</h4>
-            <ul style="color: #475569; margin: 0; padding-left: 1.25rem;">
-                <li style="margin-bottom: 0.5rem;">Increase qualified traffic from AI platforms</li>
-                <li style="margin-bottom: 0.5rem;">Improve conversion through accurate AI representation</li>
-                <li style="margin-bottom: 0.5rem;">Measurable impact on digital engagement</li>
+        <div class="benefit-card">
+            <h4>📈 ROI & Growth</h4>
+            <ul>
+                <li>Increase qualified traffic from AI platforms</li>
+                <li>Improve conversion through accurate AI representation</li>
+                <li>Measurable impact on digital engagement</li>
             </ul>
         </div>
         """, unsafe_allow_html=True)
@@ -656,10 +970,12 @@ def show_landing_page():
     # CTA Section
     st.markdown("""
     <div class="cta-section">
-        <h2 style="font-size: 2.25rem; margin-bottom: 1.25rem; font-weight: 700;">Ready to Optimize for AI?</h2>
-        <p style="font-size: 1.125rem; margin-bottom: 2.5rem; opacity: 0.95;">
-            Start generating professional llms.txt files for your organization today.
-        </p>
+        <div class="cta-content">
+            <h2 style="font-size: 2.25rem; margin-bottom: 1.25rem; font-weight: 700;">Ready to Optimize for AI?</h2>
+            <p style="font-size: 1.125rem; margin-bottom: 2.5rem;">
+                Start generating professional llms.txt files for your organization today.
+            </p>
+        </div>
     </div>
     """, unsafe_allow_html=True)
     
@@ -674,10 +990,10 @@ def show_landing_page():
     
     # Footer
     st.markdown("""
-    <div style="text-align: center; padding: 3rem 2rem 2rem; color: #64748b; border-top: 1px solid #e2e8f0; margin-top: 4rem;">
-        <p style="font-weight: 500; color: #475569;">Powered by Advanced Web Crawling Technology</p>
+    <div style="text-align: center; padding: 3rem 2rem 2rem; color: var(--muted-foreground); border-top: 1px solid var(--border); margin-top: 4rem;">
+        <p style="font-weight: 500; color: var(--foreground);">Powered by Advanced Web Crawling Technology</p>
         <p style="font-size: 0.875rem; margin-top: 1rem;">
-            © 2024 LLM-Ready Generator • <a href="https://llmstxt.org" target="_blank" style="color: #2563eb; text-decoration: none;">Documentation</a> • Professional Support Available
+            © 2024 LLM-Ready Generator • <a href="https://llmstxt.org" target="_blank" style="color: var(--primary); text-decoration: none;">Documentation</a> • Professional Support Available
         </p>
     </div>
     """, unsafe_allow_html=True)
@@ -989,8 +1305,8 @@ def show_generator():
         st.subheader("Implementation Guide")
 
         st.markdown("""
-        <div style="background: #f8fafc; padding: 1.5rem; border-radius: 8px; border-left: 3px solid #2563eb;">
-            <h4 style="color: #1e293b; margin-bottom: 1rem;">Quick Start Process:</h4>
+        <div style="background: var(--card); border: 1px solid var(--border); border-left: 3px solid var(--primary); padding: 1.5rem; border-radius: 8px; backdrop-filter: blur(10px);">
+            <h4 style="color: var(--foreground); margin-bottom: 1rem;">Quick Start Process:</h4>
             <ol style="color: #475569; margin: 0; padding-left: 1.25rem;">
                 <li style="margin-bottom: 0.5rem;">Enter your website URL in the configuration panel</li>
                 <li style="margin-bottom: 0.5rem;">Adjust advanced settings if needed</li>
@@ -1001,8 +1317,8 @@ def show_generator():
         </div>
         
         <div style="margin-top: 1.5rem;">
-            <h4 style="color: #1e293b; margin-bottom: 0.75rem;">Generated Package Contents:</h4>
-            <ul style="color: #475569; padding-left: 1.25rem;">
+            <h4 style="color: var(--foreground); margin-bottom: 0.75rem;">Generated Package Contents:</h4>
+            <ul style="color: var(--muted-foreground); padding-left: 1.25rem;">
                 <li><strong>llms.txt</strong> - Optimized summary for AI consumption</li>
                 <li><strong>llms-full.txt</strong> - Comprehensive content with metadata</li>
                 <li><strong>manifest.json</strong> - Processing metadata and statistics</li>
@@ -1011,8 +1327,8 @@ def show_generator():
         </div>
         
         <div style="margin-top: 1.5rem;">
-            <h4 style="color: #1e293b; margin-bottom: 0.75rem;">Use Cases:</h4>
-            <ul style="color: #475569; padding-left: 1.25rem;">
+            <h4 style="color: var(--foreground); margin-bottom: 0.75rem;">Use Cases:</h4>
+            <ul style="color: var(--muted-foreground); padding-left: 1.25rem;">
                 <li>Enterprise knowledge management</li>
                 <li>AI-powered customer support</li>
                 <li>Competitive intelligence gathering</li>
