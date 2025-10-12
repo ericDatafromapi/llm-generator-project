@@ -1,0 +1,352 @@
+"""
+Subscription service for managing Stripe subscriptions and quotas.
+"""
+import stripe
+from typing import Optional
+from datetime import datetime
+from uuid import UUID
+from sqlalchemy.orm import Session
+from sqlalchemy import select, func
+
+from app.core.config import settings
+from app.core.subscription_plans import PlanType, PLAN_FEATURES, get_plan_limits, get_plan_info
+from app.models.user import User
+from app.models.subscription import Subscription
+from app.schemas.subscription import (
+    CheckoutSessionResponse,
+    CustomerPortalResponse,
+    SubscriptionInfo,
+    UsageStats,
+    PlanInfo
+)
+
+# Configure Stripe
+stripe.api_key = settings.STRIPE_SECRET_KEY
+
+
+class SubscriptionService:
+    """Service for managing subscriptions and Stripe integration."""
+    
+    def __init__(self, db: Session):
+        self.db = db
+    
+    def create_checkout_session(
+        self,
+        user: User,
+        plan_type: str,
+        success_url: Optional[str] = None,
+        cancel_url: Optional[str] = None
+    ) -> CheckoutSessionResponse:
+        """
+        Create a Stripe checkout session for subscription.
+        
+        Args:
+            user: User subscribing
+            plan_type: Plan to subscribe to (standard or pro)
+            success_url: Custom success URL (optional)
+            cancel_url: Custom cancel URL (optional)
+            
+        Returns:
+            CheckoutSessionResponse with checkout URL
+        """
+        # Validate plan type
+        if plan_type not in [PlanType.STANDARD, PlanType.PRO]:
+            raise ValueError(f"Invalid plan type: {plan_type}. Must be 'standard' or 'pro'")
+        
+        # Get or create Stripe customer
+        subscription = self.get_user_subscription(user.id)
+        
+        if subscription and subscription.stripe_customer_id:
+            customer_id = subscription.stripe_customer_id
+        else:
+            # Create new Stripe customer
+            customer = stripe.Customer.create(
+                email=user.email,
+                name=user.full_name,
+                metadata={
+                    "user_id": str(user.id),
+                    "plan_type": plan_type
+                }
+            )
+            customer_id = customer.id
+            
+            # Update subscription with customer ID
+            if subscription:
+                subscription.stripe_customer_id = customer_id
+                self.db.commit()
+        
+        # Get price ID based on plan
+        price_id = (
+            settings.STRIPE_PRICE_STANDARD if plan_type == PlanType.STANDARD
+            else settings.STRIPE_PRICE_PRO
+        )
+        
+        # Set default URLs if not provided
+        if not success_url:
+            success_url = f"{settings.FRONTEND_URL}/dashboard?success=true&session_id={{CHECKOUT_SESSION_ID}}"
+        if not cancel_url:
+            cancel_url = f"{settings.FRONTEND_URL}/pricing?canceled=true"
+        
+        # Create checkout session
+        session = stripe.checkout.Session.create(
+            customer=customer_id,
+            payment_method_types=['card'],
+            line_items=[{
+                'price': price_id,
+                'quantity': 1,
+            }],
+            mode='subscription',
+            success_url=success_url,
+            cancel_url=cancel_url,
+            metadata={
+                "user_id": str(user.id),
+                "plan_type": plan_type
+            },
+            allow_promotion_codes=True,
+            billing_address_collection='required'
+        )
+        
+        return CheckoutSessionResponse(
+            checkout_url=session.url,
+            session_id=session.id
+        )
+    
+    def create_customer_portal_session(
+        self,
+        user: User,
+        return_url: Optional[str] = None
+    ) -> CustomerPortalResponse:
+        """
+        Create a Stripe customer portal session.
+        
+        Args:
+            user: User requesting portal access
+            return_url: URL to return to after portal session
+            
+        Returns:
+            CustomerPortalResponse with portal URL
+        """
+        subscription = self.get_user_subscription(user.id)
+        
+        if not subscription or not subscription.stripe_customer_id:
+            raise ValueError("No Stripe customer found for this user")
+        
+        if not return_url:
+            return_url = f"{settings.FRONTEND_URL}/dashboard"
+        
+        # Create portal session
+        session = stripe.billing_portal.Session.create(
+            customer=subscription.stripe_customer_id,
+            return_url=return_url
+        )
+        
+        return CustomerPortalResponse(portal_url=session.url)
+    
+    def get_user_subscription(self, user_id: UUID) -> Optional[Subscription]:
+        """Get user's subscription."""
+        return self.db.query(Subscription).filter(Subscription.user_id == user_id).first()
+    
+    def get_subscription_info(self, user: User) -> SubscriptionInfo:
+        """
+        Get detailed subscription information for a user.
+        
+        Args:
+            user: User to get subscription info for
+            
+        Returns:
+            SubscriptionInfo with all details
+        """
+        subscription = self.get_user_subscription(user.id)
+        
+        if not subscription:
+            raise ValueError("No subscription found for user")
+        
+        # Get plan info
+        plan_info = get_plan_info(subscription.plan_type)
+        
+        # Calculate remaining generations
+        remaining = max(0, subscription.generations_limit - subscription.generations_used)
+        
+        # Calculate usage percentage
+        usage_pct = (
+            (subscription.generations_used / subscription.generations_limit * 100)
+            if subscription.generations_limit > 0
+            else 0
+        )
+        
+        return SubscriptionInfo(
+            id=subscription.id,
+            user_id=subscription.user_id,
+            plan_type=subscription.plan_type,
+            stripe_customer_id=subscription.stripe_customer_id,
+            stripe_subscription_id=subscription.stripe_subscription_id,
+            status=subscription.status,
+            current_period_start=subscription.current_period_start,
+            current_period_end=subscription.current_period_end,
+            cancel_at_period_end=subscription.cancel_at_period_end,
+            generations_used=subscription.generations_used,
+            generations_limit=subscription.generations_limit,
+            max_websites=subscription.websites_limit,
+            created_at=subscription.created_at,
+            updated_at=subscription.updated_at,
+            remaining_generations=remaining,
+            usage_percentage=round(usage_pct, 2),
+            plan_info=PlanInfo(**plan_info)
+        )
+    
+    def get_usage_stats(self, user: User) -> UsageStats:
+        """
+        Get usage statistics for a user.
+        
+        Args:
+            user: User to get stats for
+            
+        Returns:
+            UsageStats with current usage information
+        """
+        subscription = self.get_user_subscription(user.id)
+        
+        if not subscription:
+            raise ValueError("No subscription found for user")
+        
+        # Count websites
+        from app.models.website import Website
+        website_count = self.db.query(func.count(Website.id)).filter(Website.user_id == user.id).scalar()
+        
+        # Calculate remaining generations
+        remaining = max(0, subscription.generations_limit - subscription.generations_used)
+        
+        # Calculate usage percentage
+        usage_pct = (
+            (subscription.generations_used / subscription.generations_limit * 100)
+            if subscription.generations_limit > 0
+            else 0
+        )
+        
+        return UsageStats(
+            current_plan=subscription.plan_type,
+            generations_used=subscription.generations_used,
+            generations_limit=subscription.generations_limit,
+            remaining_generations=remaining,
+            usage_percentage=round(usage_pct, 2),
+            websites_count=website_count or 0,
+            max_websites=subscription.websites_limit,
+            period_start=subscription.current_period_start,
+            period_end=subscription.current_period_end
+        )
+    
+    def check_generation_quota(self, user_id: UUID) -> bool:
+        """
+        Check if user has available generation quota.
+        
+        Args:
+            user_id: User ID to check
+            
+        Returns:
+            True if user can generate, False otherwise
+        """
+        subscription = self.get_user_subscription(user_id)
+        
+        if not subscription:
+            return False
+        
+        # Check if subscription is active
+        if subscription.status != "active":
+            return False
+        
+        # Check if within limit
+        return subscription.generations_used < subscription.generations_limit
+    
+    def increment_usage(self, user_id: UUID) -> None:
+        """
+        Increment generation usage for a user.
+        
+        Args:
+            user_id: User ID to increment usage for
+        """
+        subscription = self.get_user_subscription(user_id)
+        
+        if not subscription:
+            raise ValueError("No subscription found for user")
+        
+        subscription.generations_used += 1
+        subscription.updated_at = datetime.utcnow()
+        self.db.commit()
+    
+    def check_website_limit(self, user_id: UUID) -> bool:
+        """
+        Check if user can create more websites.
+        
+        Args:
+            user_id: User ID to check
+            
+        Returns:
+            True if user can create more websites
+        """
+        subscription = self.get_user_subscription(user_id)
+        
+        if not subscription:
+            return False
+        
+        # Count current websites
+        from app.models.website import Website
+        website_count = self.db.query(func.count(Website.id)).filter(Website.user_id == user_id).scalar()
+        
+        return (website_count or 0) < subscription.websites_limit
+    
+    def reset_monthly_usage(self, user_id: UUID) -> None:
+        """
+        Reset monthly usage for a user.
+        Called by Celery beat on 1st of each month.
+        
+        Args:
+            user_id: User ID to reset usage for
+        """
+        subscription = self.get_user_subscription(user_id)
+        
+        if subscription:
+            subscription.generations_used = 0
+            subscription.updated_at = datetime.utcnow()
+            self.db.commit()
+    
+    def update_subscription_from_stripe(
+        self,
+        stripe_subscription_id: str,
+        status: str,
+        current_period_start: datetime,
+        current_period_end: datetime,
+        cancel_at_period_end: bool,
+        plan_type: Optional[str] = None
+    ) -> None:
+        """
+        Update subscription from Stripe webhook data.
+        
+        Args:
+            stripe_subscription_id: Stripe subscription ID
+            status: Subscription status
+            current_period_start: Period start date
+            current_period_end: Period end date
+            cancel_at_period_end: Whether subscription cancels at period end
+            plan_type: New plan type (if changed)
+        """
+        subscription = self.db.query(Subscription).filter(
+            Subscription.stripe_subscription_id == stripe_subscription_id
+        ).first()
+        
+        if not subscription:
+            return
+        
+        subscription.status = status
+        subscription.current_period_start = current_period_start
+        subscription.current_period_end = current_period_end
+        subscription.cancel_at_period_end = cancel_at_period_end
+        subscription.updated_at = datetime.utcnow()
+        
+        # Update plan type if changed
+        if plan_type and plan_type != subscription.plan_type:
+            subscription.plan_type = plan_type
+            limits = get_plan_limits(plan_type)
+            subscription.generations_limit = limits["generations_limit"]
+            subscription.websites_limit = limits["max_websites"]
+        
+        self.db.commit()

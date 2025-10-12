@@ -50,6 +50,12 @@ class Settings(BaseSettings):
     STRIPE_PUBLISHABLE_KEY: str = "pk_test_your_key_here"
     STRIPE_WEBHOOK_SECRET: str = "whsec_your_webhook_secret_here"
     
+    # Subscription Plans Configuration
+    # These should match your Stripe Dashboard product/price IDs
+    STRIPE_PRICE_FREE: str = ""  # Free plan (no Stripe product needed)
+    STRIPE_PRICE_STANDARD: str = "price_standard_monthly"  # Replace with actual price ID
+    STRIPE_PRICE_PRO: str = "price_pro_monthly"  # Replace with actual price ID
+    
     # Email (for Week 3)
     SENDGRID_API_KEY: str = ""
     FROM_EMAIL: str = "noreply@yourdomain.com"
