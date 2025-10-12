@@ -19,7 +19,9 @@ from app.core.security import (
 from app.core.config import settings
 from app.core.rate_limit import limiter
 from app.models.user import User
+from app.models.subscription import Subscription
 from app.models.email_verification_token import EmailVerificationToken
+from app.core.subscription_plans import get_plan_limits
 from app.schemas.auth import (
     UserRegister,
     UserLogin,
@@ -87,6 +89,20 @@ async def register(
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
+    
+    # Create free subscription for new user
+    limits = get_plan_limits("free")
+    new_subscription = Subscription(
+        user_id=new_user.id,
+        plan_type="free",
+        status="active",
+        generations_limit=limits["generations_limit"],
+        generations_used=0,
+        websites_limit=limits["max_websites"],
+        cancel_at_period_end=False
+    )
+    db.add(new_subscription)
+    db.commit()
     
     # Create email verification token
     verification_token = secrets.token_urlsafe(32)

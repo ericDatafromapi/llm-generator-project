@@ -80,6 +80,18 @@ async def get_current_user(
     return user
 
 
+# Alias for clarity - get_current_user already checks is_active
+async def get_current_active_user(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: Session = Depends(get_db)
+) -> User:
+    """
+    Dependency to get the current authenticated and active user.
+    This is an alias for get_current_user for clarity.
+    """
+    return await get_current_user(credentials, db)
+
+
 async def get_current_verified_user(
     current_user: User = Depends(get_current_user)
 ) -> User:

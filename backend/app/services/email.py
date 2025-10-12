@@ -54,18 +54,21 @@ class EmailService:
             return True  # Return True in development/testing
         
         try:
+            # Create message without html_content initially
             message = Mail(
                 from_email=Email(self.from_email),
                 to_emails=To(to_email),
-                subject=subject,
-                html_content=Content("text/html", html_content)
+                subject=subject
             )
             
+            # Set content properly - either both text and html, or just html
             if text_content:
                 message.content = [
                     Content("text/plain", text_content),
                     Content("text/html", html_content)
                 ]
+            else:
+                message.content = Content("text/html", html_content)
             
             response = self.client.send(message)
             
@@ -73,11 +76,16 @@ class EmailService:
                 logger.info(f"Email sent successfully to {to_email}")
                 return True
             else:
-                logger.error(f"Failed to send email to {to_email}. Status: {response.status_code}")
+                logger.error(f"Failed to send email to {to_email}. Status: {response.status_code}, Body: {response.body}")
                 return False
                 
         except Exception as e:
             logger.error(f"Error sending email to {to_email}: {e}")
+            # Log more detailed error information
+            if hasattr(e, 'body'):
+                logger.error(f"SendGrid error details: {e.body}")
+            if hasattr(e, 'to_dict'):
+                logger.error(f"SendGrid error dict: {e.to_dict}")
             return False
     
     async def send_verification_email(self, to_email: str, token: str, user_name: Optional[str] = None) -> bool:

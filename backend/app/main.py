@@ -11,7 +11,7 @@ import logging
 from app.core.config import settings
 from app.core.database import engine, Base
 from app.core.rate_limit import limiter, rate_limit_exceeded_handler
-from app.api.v1 import auth, password_reset, email_verification
+from app.api.v1 import auth, password_reset, email_verification, subscriptions, webhooks
 
 # Configure logging
 logging.basicConfig(
@@ -123,6 +123,20 @@ app.include_router(
     email_verification.router,
     prefix=f"{settings.API_V1_PREFIX}/auth/email-verification",
     tags=["Email Verification"]
+)
+
+# API v1 routes - Subscriptions & Payments
+app.include_router(
+    subscriptions.router,
+    prefix=settings.API_V1_PREFIX,
+    tags=["Subscriptions"]
+)
+
+# Webhook routes (no auth required)
+app.include_router(
+    webhooks.router,
+    prefix=settings.API_V1_PREFIX,
+    tags=["Webhooks"]
 )
 
 
