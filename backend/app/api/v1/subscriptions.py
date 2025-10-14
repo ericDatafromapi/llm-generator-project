@@ -1,10 +1,11 @@
 """
 Subscription management API endpoints.
 """
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.core.rate_limit import limiter
 from app.api.dependencies import get_current_active_user
 from app.models.user import User
 from app.services.subscription import SubscriptionService
@@ -39,13 +40,19 @@ async def get_available_plans():
 
 
 @router.post("/checkout", response_model=CheckoutSessionResponse)
+@limiter.limit("5/minute")  # Prevent double-click and abuse
 async def create_checkout_session(
+    request: Request,
     data: CheckoutSessionCreate,
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
     """
     Create a Stripe checkout session for subscription purchase.
+    
+    Rate limited to 5 requests per minute to prevent:
+    - Double-click duplicate charges
+    - Abuse and spam
     
     The user will be redirected to Stripe to complete payment.
     After successful payment, Stripe will redirect to the success_url.

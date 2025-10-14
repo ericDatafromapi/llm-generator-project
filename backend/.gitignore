@@ -43,3 +43,9 @@ htmlcov/
 # OS
 .DS_Store
 Thumbs.db
+
+# Troubleshooting docs (temporary debugging guides)
+troubleshooting_docs/
+
+# File Storage (generated files)
+storage/

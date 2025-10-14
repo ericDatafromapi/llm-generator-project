@@ -2,11 +2,14 @@
 Subscription service for managing Stripe subscriptions and quotas.
 """
 import stripe
+import logging
 from typing import Optional
 from datetime import datetime
 from uuid import UUID
 from sqlalchemy.orm import Session
 from sqlalchemy import select, func
+
+logger = logging.getLogger(__name__)
 
 from app.core.config import settings
 from app.core.subscription_plans import PlanType, PLAN_FEATURES, get_plan_limits, get_plan_info
@@ -65,7 +68,7 @@ class SubscriptionService:
                 name=user.full_name,
                 metadata={
                     "user_id": str(user.id),
-                    "plan_type": plan_type
+                    "plan_type": plan_type.value if hasattr(plan_type, 'value') else plan_type  # Convert enum to string value
                 }
             )
             customer_id = customer.id
@@ -100,7 +103,7 @@ class SubscriptionService:
             cancel_url=cancel_url,
             metadata={
                 "user_id": str(user.id),
-                "plan_type": plan_type
+                "plan_type": plan_type.value if hasattr(plan_type, 'value') else plan_type  # Convert enum to string value
             },
             allow_promotion_codes=True,
             billing_address_collection='required'
@@ -237,7 +240,7 @@ class SubscriptionService:
     
     def check_generation_quota(self, user_id: UUID) -> bool:
         """
-        Check if user has available generation quota.
+        Check if user has available generation quota with grace period support.
         
         Args:
             user_id: User ID to check
@@ -250,12 +253,25 @@ class SubscriptionService:
         if not subscription:
             return False
         
-        # Check if subscription is active
-        if subscription.status != "active":
-            return False
+        # Allowed statuses
+        ALLOWED_STATUSES = ["active", "trialing"]
+        GRACE_PERIOD_DAYS = 3
         
-        # Check if within limit
-        return subscription.generations_used < subscription.generations_limit
+        # Check status
+        if subscription.status in ALLOWED_STATUSES:
+            return subscription.generations_used < subscription.generations_limit
+        
+        # Grace period for past_due
+        if subscription.status == "past_due":
+            if subscription.updated_at:
+                days_past_due = (datetime.utcnow() - subscription.updated_at).days
+                if days_past_due <= GRACE_PERIOD_DAYS:
+                    logger.info(f"User {user_id} in grace period: {days_past_due}/{GRACE_PERIOD_DAYS} days")
+                    return subscription.generations_used < subscription.generations_limit
+                else:
+                    logger.warning(f"User {user_id} exceeded grace period: {days_past_due} days past due")
+        
+        return False
     
     def increment_usage(self, user_id: UUID) -> None:
         """
@@ -350,3 +366,86 @@ class SubscriptionService:
             subscription.websites_limit = limits["max_websites"]
         
         self.db.commit()
+    
+    def upgrade_subscription(self, user: User, new_plan_type: str) -> dict:
+        """
+        Upgrade subscription with proration.
+        
+        Args:
+            user: User upgrading subscription
+            new_plan_type: New plan type (standard or pro)
+            
+        Returns:
+            Dict with upgrade status and proration info
+        """
+        subscription = self.get_user_subscription(user.id)
+        
+        if not subscription or not subscription.stripe_subscription_id:
+            raise ValueError("No active subscription found")
+        
+        # Get new price ID
+        new_price_id = (
+            settings.STRIPE_PRICE_STANDARD if new_plan_type == "standard"
+            else settings.STRIPE_PRICE_PRO
+        )
+        
+        # Retrieve current subscription from Stripe
+        stripe_subscription = stripe.Subscription.retrieve(subscription.stripe_subscription_id)
+        
+        # Get current subscription item ID
+        if not stripe_subscription.items.data:
+            raise ValueError("No subscription items found")
+        
+        subscription_item_id = stripe_subscription.items.data[0].id
+        
+        # Update Stripe subscription with proration
+        updated_subscription = stripe.Subscription.modify(
+            subscription.stripe_subscription_id,
+            items=[{
+                'id': subscription_item_id,
+                'price': new_price_id,
+            }],
+            proration_behavior='create_prorations',  # Enable proration
+        )
+        
+        logger.info(f"Subscription upgraded with proration: {subscription.stripe_subscription_id}")
+        
+        return {
+            "status": "upgraded",
+            "proration": "applied",
+            "new_plan": new_plan_type
+        }
+    
+    def cancel_user_subscription_on_deletion(self, user_id: UUID) -> None:
+        """
+        Cancel Stripe subscription when user account is deleted.
+        This prevents continued billing after account deletion.
+        
+        Args:
+            user_id: User ID being deleted
+        """
+        subscription = self.get_user_subscription(user_id)
+        
+        if not subscription:
+            logger.info(f"No subscription found for user {user_id} during deletion")
+            return
+        
+        if subscription.stripe_subscription_id:
+            try:
+                # Cancel subscription in Stripe immediately
+                stripe.Subscription.delete(subscription.stripe_subscription_id)
+                logger.info(f"Canceled Stripe subscription {subscription.stripe_subscription_id} for deleted user {user_id}")
+            except stripe.error.StripeError as e:
+                logger.error(f"Failed to cancel Stripe subscription during user deletion: {e}")
+                # Don't raise - allow user deletion to proceed
+            except Exception as e:
+                logger.error(f"Unexpected error canceling subscription during user deletion: {e}")
+        
+        # Update local subscription record
+        subscription.status = "canceled"
+        subscription.plan_type = "free"
+        subscription.stripe_subscription_id = None
+        subscription.updated_at = datetime.utcnow()
+        self.db.commit()
+        
+        logger.info(f"Local subscription canceled for deleted user {user_id}")
