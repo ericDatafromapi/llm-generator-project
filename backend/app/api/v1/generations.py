@@ -133,6 +133,52 @@ def check_generation_quota(
     )
 
 
+@router.get("/history", response_model=GenerationListResponse)
+def get_generation_history(
+    page: int = Query(1, ge=1, description="Page number"),
+    per_page: int = Query(20, ge=1, le=100, description="Items per page"),
+    website_id: Optional[UUID] = Query(None, description="Filter by website ID"),
+    status: Optional[str] = Query(None, description="Filter by status"),
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Get paginated list of user's generations with optional filters.
+    """
+    # Build query
+    query = db.query(Generation).filter(Generation.user_id == current_user.id)
+    
+    # Apply filters
+    if website_id:
+        query = query.filter(Generation.website_id == website_id)
+    
+    if status:
+        if status not in ['pending', 'processing', 'completed', 'failed']:
+            raise HTTPException(status_code=400, detail="Invalid status filter")
+        query = query.filter(Generation.status == status)
+    
+    # Get total count
+    total = query.count()
+    
+    # Calculate pagination
+    total_pages = math.ceil(total / per_page) if total > 0 else 1
+    
+    if page > total_pages and total > 0:
+        raise HTTPException(status_code=404, detail="Page not found")
+    
+    # Get paginated results
+    offset = (page - 1) * per_page
+    generations = query.order_by(desc(Generation.created_at)).offset(offset).limit(per_page).all()
+    
+    return GenerationListResponse(
+        items=[GenerationResponse.model_validate(g) for g in generations],
+        total=total,
+        page=page,
+        per_page=per_page,
+        pages=total_pages
+    )
+
+
 @router.get("/{generation_id}", response_model=GenerationStatusResponse)
 def get_generation_status(
     generation_id: UUID,
@@ -218,52 +264,6 @@ def download_generation(
         headers={
             "Content-Disposition": f'attachment; filename="{filename}"'
         }
-    )
-
-
-@router.get("/history", response_model=GenerationListResponse)
-def get_generation_history(
-    page: int = Query(1, ge=1, description="Page number"),
-    per_page: int = Query(20, ge=1, le=100, description="Items per page"),
-    website_id: Optional[UUID] = Query(None, description="Filter by website ID"),
-    status: Optional[str] = Query(None, description="Filter by status"),
-    current_user: User = Depends(get_current_active_user),
-    db: Session = Depends(get_db)
-):
-    """
-    Get paginated list of user's generations with optional filters.
-    """
-    # Build query
-    query = db.query(Generation).filter(Generation.user_id == current_user.id)
-    
-    # Apply filters
-    if website_id:
-        query = query.filter(Generation.website_id == website_id)
-    
-    if status:
-        if status not in ['pending', 'processing', 'completed', 'failed']:
-            raise HTTPException(status_code=400, detail="Invalid status filter")
-        query = query.filter(Generation.status == status)
-    
-    # Get total count
-    total = query.count()
-    
-    # Calculate pagination
-    total_pages = math.ceil(total / per_page) if total > 0 else 1
-    
-    if page > total_pages and total > 0:
-        raise HTTPException(status_code=404, detail="Page not found")
-    
-    # Get paginated results
-    offset = (page - 1) * per_page
-    generations = query.order_by(desc(Generation.created_at)).offset(offset).limit(per_page).all()
-    
-    return GenerationListResponse(
-        items=[GenerationResponse.model_validate(g) for g in generations],
-        total=total,
-        page=page,
-        per_page=per_page,
-        pages=total_pages
     )
 
 
