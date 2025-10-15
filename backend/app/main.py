@@ -11,7 +11,7 @@ import logging
 from app.core.config import settings
 from app.core.database import engine, Base
 from app.core.rate_limit import limiter, rate_limit_exceeded_handler
-from app.api.v1 import auth, password_reset, email_verification, subscriptions, webhooks, generations, websites
+from app.api.v1 import auth, password_reset, email_verification, subscriptions, webhooks, generations, websites, contact
 
 # Configure logging
 logging.basicConfig(
@@ -146,6 +146,12 @@ app.include_router(
 # API v1 routes - Websites
 app.include_router(
     websites.router,
+    prefix=settings.API_V1_PREFIX
+)
+
+# API v1 routes - Contact (public)
+app.include_router(
+    contact.router,
     prefix=settings.API_V1_PREFIX
 )
 

@@ -62,6 +62,7 @@ async def create_checkout_session(
         return service.create_checkout_session(
             user=current_user,
             plan_type=data.plan_type,
+            billing_interval=data.billing_interval,
             success_url=data.success_url,
             cancel_url=data.cancel_url
         )

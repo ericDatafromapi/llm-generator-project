@@ -430,6 +430,86 @@ class EmailService:
             html_content=html_content,
             text_content=text_content
         )
+    async def send_contact_form_email(
+        self,
+        from_name: str,
+        from_email: str,
+        subject: str,
+        message: str
+    ) -> bool:
+        """
+        Send contact form submission to support email.
+        
+        Args:
+            from_name: Name of person submitting form
+            from_email: Email of person submitting form
+            subject: Subject line from form
+            message: Message content from form
+            
+        Returns:
+            True if email sent successfully, False otherwise
+        """
+        # Send to support email (FROM_EMAIL or a dedicated support email)
+        support_email = self.from_email  # Or settings.SUPPORT_EMAIL if you add one
+        
+        html_content = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+                <h1 style="color: white; margin: 0;">📧 New Contact Form Submission</h1>
+            </div>
+            
+            <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px;">
+                <div style="background: #fff; padding: 20px; border-radius: 5px; margin-bottom: 20px;">
+                    <p style="margin: 0; font-size: 14px; color: #666;">From</p>
+                    <p style="margin: 5px 0 0 0; font-size: 16px; font-weight: bold;">{from_name}</p>
+                    <p style="margin: 5px 0 0 0; font-size: 14px; color: #667eea;">{from_email}</p>
+                </div>
+                
+                <div style="background: #fff; padding: 20px; border-radius: 5px; margin-bottom: 20px;">
+                    <p style="margin: 0; font-size: 14px; color: #666;">Subject</p>
+                    <p style="margin: 5px 0 0 0; font-size: 16px; font-weight: bold;">{subject}</p>
+                </div>
+                
+                <div style="background: #fff; padding: 20px; border-radius: 5px;">
+                    <p style="margin: 0; font-size: 14px; color: #666;">Message</p>
+                    <p style="margin: 10px 0 0 0; font-size: 14px; white-space: pre-wrap;">{message}</p>
+                </div>
+                
+                <p style="font-size: 12px; color: #999; margin-top: 20px; text-align: center;">
+                    Reply to this person at: {from_email}
+                </p>
+            </div>
+        </body>
+        </html>
+        """
+        
+        text_content = f"""
+        New Contact Form Submission
+        
+        From: {from_name}
+        Email: {from_email}
+        Subject: {subject}
+        
+        Message:
+        {message}
+        
+        ---
+        Reply to: {from_email}
+        """
+        
+        return await self.send_email(
+            to_email=support_email,
+            subject=f"Contact Form: {subject}",
+            html_content=html_content,
+            text_content=text_content
+        )
+
 
 
 # Global email service instance

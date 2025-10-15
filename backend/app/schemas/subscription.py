@@ -15,7 +15,8 @@ class SubscriptionBase(BaseModel):
 
 class CheckoutSessionCreate(BaseModel):
     """Schema for creating a Stripe checkout session."""
-    plan_type: PlanType = Field(..., description="Plan to subscribe to (standard or pro)")
+    plan_type: PlanType = Field(..., description="Plan to subscribe to (starter, standard, or pro)")
+    billing_interval: str = Field(default="monthly", description="Billing interval: monthly or yearly")
     success_url: Optional[str] = Field(
         None,
         description="Optional custom success URL",
@@ -26,6 +27,14 @@ class CheckoutSessionCreate(BaseModel):
         description="Optional custom cancel URL",
         json_schema_extra={"example": None}  # Hide from Swagger UI
     )
+    
+    @field_validator('billing_interval')
+    @classmethod
+    def validate_billing_interval(cls, v):
+        """Validate billing interval."""
+        if v not in ['monthly', 'yearly']:
+            return 'monthly'
+        return v
     
     @field_validator('success_url', 'cancel_url', mode='before')
     @classmethod
@@ -41,7 +50,8 @@ class CheckoutSessionCreate(BaseModel):
     class Config:
         json_schema_extra = {
             "example": {
-                "plan_type": "standard"
+                "plan_type": "standard",
+                "billing_interval": "monthly"
             }
         }
 
@@ -60,9 +70,9 @@ class CustomerPortalResponse(BaseModel):
 class PlanInfo(BaseModel):
     """Information about a subscription plan."""
     name: str
-    price: int
+    price_monthly: int
+    price_yearly: int
     currency: str
-    interval: str
     generations_limit: int
     max_websites: int
     max_pages_per_website: int

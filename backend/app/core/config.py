@@ -55,8 +55,20 @@ class Settings(BaseSettings):
     # Subscription Plans Configuration
     # These should match your Stripe Dashboard product/price IDs
     STRIPE_PRICE_FREE: str = ""  # Free plan (no Stripe product needed)
-    STRIPE_PRICE_STANDARD: str = "price_standard_monthly"  # Replace with actual price ID
-    STRIPE_PRICE_PRO: str = "price_pro_monthly"  # Replace with actual price ID
+    
+    # Starter Plan (NEW)
+    STRIPE_PRICE_STARTER_MONTHLY: str = ""  # Replace with actual price ID
+    STRIPE_PRICE_STARTER_YEARLY: str = ""   # Replace with actual price ID
+    
+    # Standard Plan
+    STRIPE_PRICE_STANDARD: str = ""  # Legacy - kept for backward compatibility
+    STRIPE_PRICE_STANDARD_MONTHLY: str = ""  # Replace with actual price ID
+    STRIPE_PRICE_STANDARD_YEARLY: str = ""   # Replace with actual price ID
+    
+    # Pro Plan
+    STRIPE_PRICE_PRO: str = ""  # Legacy - kept for backward compatibility
+    STRIPE_PRICE_PRO_MONTHLY: str = ""  # Replace with actual price ID
+    STRIPE_PRICE_PRO_YEARLY: str = ""   # Replace with actual price ID
     
     # Email (for Week 3)
     SENDGRID_API_KEY: str = ""

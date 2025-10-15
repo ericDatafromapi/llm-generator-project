@@ -37,6 +37,7 @@ class SubscriptionService:
         self,
         user: User,
         plan_type: str,
+        billing_interval: str = 'monthly',
         success_url: Optional[str] = None,
         cancel_url: Optional[str] = None
     ) -> CheckoutSessionResponse:
@@ -45,7 +46,8 @@ class SubscriptionService:
         
         Args:
             user: User subscribing
-            plan_type: Plan to subscribe to (standard or pro)
+            plan_type: Plan to subscribe to (starter, standard, or pro)
+            billing_interval: Billing interval (monthly or yearly)
             success_url: Custom success URL (optional)
             cancel_url: Custom cancel URL (optional)
             
@@ -53,8 +55,12 @@ class SubscriptionService:
             CheckoutSessionResponse with checkout URL
         """
         # Validate plan type
-        if plan_type not in [PlanType.STANDARD, PlanType.PRO]:
-            raise ValueError(f"Invalid plan type: {plan_type}. Must be 'standard' or 'pro'")
+        if plan_type not in [PlanType.STARTER, PlanType.STANDARD, PlanType.PRO]:
+            raise ValueError(f"Invalid plan type: {plan_type}. Must be 'starter', 'standard', or 'pro'")
+        
+        # Validate billing interval
+        if billing_interval not in ['monthly', 'yearly']:
+            billing_interval = 'monthly'
         
         # Get or create Stripe customer
         subscription = self.get_user_subscription(user.id)
@@ -68,7 +74,7 @@ class SubscriptionService:
                 name=user.full_name,
                 metadata={
                     "user_id": str(user.id),
-                    "plan_type": plan_type.value if hasattr(plan_type, 'value') else plan_type  # Convert enum to string value
+                    "plan_type": plan_type.value if hasattr(plan_type, 'value') else plan_type
                 }
             )
             customer_id = customer.id
@@ -78,11 +84,19 @@ class SubscriptionService:
                 subscription.stripe_customer_id = customer_id
                 self.db.commit()
         
-        # Get price ID based on plan
-        price_id = (
-            settings.STRIPE_PRICE_STANDARD if plan_type == PlanType.STANDARD
-            else settings.STRIPE_PRICE_PRO
-        )
+        # Get price ID based on plan and billing interval
+        price_id_map = {
+            ('starter', 'monthly'): settings.STRIPE_PRICE_STARTER_MONTHLY,
+            ('starter', 'yearly'): settings.STRIPE_PRICE_STARTER_YEARLY,
+            ('standard', 'monthly'): settings.STRIPE_PRICE_STANDARD_MONTHLY,
+            ('standard', 'yearly'): settings.STRIPE_PRICE_STANDARD_YEARLY,
+            ('pro', 'monthly'): settings.STRIPE_PRICE_PRO_MONTHLY,
+            ('pro', 'yearly'): settings.STRIPE_PRICE_PRO_YEARLY,
+        }
+        
+        price_id = price_id_map.get((plan_type, billing_interval))
+        if not price_id:
+            raise ValueError(f"No Stripe price ID configured for {plan_type} ({billing_interval})")
         
         # Set default URLs if not provided
         if not success_url:
@@ -103,7 +117,8 @@ class SubscriptionService:
             cancel_url=cancel_url,
             metadata={
                 "user_id": str(user.id),
-                "plan_type": plan_type.value if hasattr(plan_type, 'value') else plan_type  # Convert enum to string value
+                "plan_type": plan_type.value if hasattr(plan_type, 'value') else plan_type,
+                "billing_interval": billing_interval
             },
             allow_promotion_codes=True,
             billing_address_collection='required'
