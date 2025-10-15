@@ -4,18 +4,20 @@ import { api } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { 
-  FileStack, 
-  Download, 
-  Loader2, 
-  CheckCircle, 
-  XCircle, 
+import {
+  FileStack,
+  Download,
+  Loader2,
+  CheckCircle,
+  XCircle,
   Clock,
   Search,
   Filter
 } from 'lucide-react'
 import type { Generation, PaginatedResponse } from '@/types'
 import { format } from 'date-fns'
+import { RecommendationCard } from '@/components/RecommendationCard'
+import { DeploymentTipsModal } from '@/components/DeploymentTipsModal'
 
 const STATUS_CONFIG = {
   pending: {
@@ -47,6 +49,7 @@ const STATUS_CONFIG = {
 export default function GenerationsPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [searchQuery, setSearchQuery] = useState('')
+  const [selectedRecommendation, setSelectedRecommendation] = useState<Generation | null>(null)
 
   // Fetch generations with auto-refresh for active ones
   const { data: generationsData, isLoading } = useQuery({
@@ -176,17 +179,21 @@ export default function GenerationsPage() {
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="space-y-1 flex-1">
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3 flex-wrap">
                         <CardTitle className="text-base">
-                          Generation #{generation.id.slice(0, 8)}
+                          {generation.website_name || 'Website'}
                         </CardTitle>
                         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${statusConfig.bgClass}`}>
                           <StatusIcon className={`h-3 w-3 ${statusConfig.className}`} />
                           {statusConfig.label}
                         </span>
                       </div>
-                      <CardDescription>
-                        Created {format(new Date(generation.created_at), 'PPp')}
+                      <CardDescription className="space-y-1">
+                        <div className="flex items-center gap-2 text-xs">
+                          <span className="text-muted-foreground">ID:</span>
+                          <code className="text-xs">{generation.id.slice(0, 8)}</code>
+                        </div>
+                        <div>Created {format(new Date(generation.created_at), 'PPp')}</div>
                       </CardDescription>
                     </div>
 
@@ -203,7 +210,7 @@ export default function GenerationsPage() {
                 </CardHeader>
 
                 {generation.status === 'completed' && (
-                  <CardContent>
+                  <CardContent className="space-y-4">
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
                       <div>
                         <p className="text-muted-foreground">Files</p>
@@ -234,6 +241,16 @@ export default function GenerationsPage() {
                         </p>
                       </div>
                     </div>
+
+                    {/* Show recommendation card if available */}
+                    {generation.recommendation && generation.file_size && generation.total_pages && (
+                      <RecommendationCard
+                        recommendation={generation.recommendation}
+                        fileSize={generation.file_size}
+                        totalPages={generation.total_pages}
+                        onShowTips={() => setSelectedRecommendation(generation)}
+                      />
+                    )}
                   </CardContent>
                 )}
 
@@ -260,6 +277,15 @@ export default function GenerationsPage() {
             </p>
           </CardContent>
         </Card>
+      )}
+
+      {/* Deployment Tips Modal */}
+      {selectedRecommendation?.recommendation && (
+        <DeploymentTipsModal
+          open={!!selectedRecommendation}
+          onOpenChange={(open) => !open && setSelectedRecommendation(null)}
+          recommendation={selectedRecommendation.recommendation}
+        />
       )}
     </div>
   )

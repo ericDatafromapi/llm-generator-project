@@ -22,9 +22,11 @@ from app.schemas.generation import (
     GenerationListResponse,
     GenerationStartResponse,
     GenerationStatusResponse,
-    QuotaCheckResponse
+    QuotaCheckResponse,
+    FileRecommendation
 )
 from app.tasks.generation import generate_llm_content
+from app.utils.recommendations import get_file_recommendation
 
 router = APIRouter(prefix="/generations", tags=["generations"])
 
@@ -145,8 +147,10 @@ def get_generation_history(
     """
     Get paginated list of user's generations with optional filters.
     """
-    # Build query
-    query = db.query(Generation).filter(Generation.user_id == current_user.id)
+    # Build query with website join
+    query = db.query(Generation, Website).join(
+        Website, Generation.website_id == Website.id
+    ).filter(Generation.user_id == current_user.id)
     
     # Apply filters
     if website_id:
@@ -168,10 +172,22 @@ def get_generation_history(
     
     # Get paginated results
     offset = (page - 1) * per_page
-    generations = query.order_by(desc(Generation.created_at)).offset(offset).limit(per_page).all()
+    results = query.order_by(desc(Generation.created_at)).offset(offset).limit(per_page).all()
+    
+    # Add recommendations and website info for completed generations
+    items = []
+    for generation, website in results:
+        gen_dict = GenerationResponse.model_validate(generation).model_dump()
+        gen_dict['website_name'] = website.name
+        gen_dict['website_url'] = website.url
+        
+        if generation.status == 'completed' and generation.total_pages and generation.file_size:
+            recommendation = get_file_recommendation(generation.total_pages, generation.file_size)
+            gen_dict['recommendation'] = FileRecommendation(**recommendation)
+        items.append(GenerationResponse(**gen_dict))
     
     return GenerationListResponse(
-        items=[GenerationResponse.model_validate(g) for g in generations],
+        items=items,
         total=total,
         page=page,
         per_page=per_page,
@@ -202,6 +218,12 @@ def get_generation_status(
         os.path.exists(generation.file_path)
     )
     
+    # Calculate recommendation for completed generations
+    recommendation = None
+    if generation.status == 'completed' and generation.total_pages and generation.file_size:
+        rec_data = get_file_recommendation(generation.total_pages, generation.file_size)
+        recommendation = FileRecommendation(**rec_data)
+    
     return GenerationStatusResponse(
         id=generation.id,
         status=generation.status,
@@ -213,7 +235,8 @@ def get_generation_status(
         started_at=generation.started_at,
         completed_at=generation.completed_at,
         duration_seconds=float(generation.duration_seconds) if generation.duration_seconds else None,
-        can_download=can_download
+        can_download=can_download,
+        recommendation=recommendation
     )
 
 

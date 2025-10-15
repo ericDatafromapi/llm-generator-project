@@ -2,9 +2,18 @@
 Pydantic schemas for generation endpoints.
 """
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional, List, Literal
 from uuid import UUID
 from pydantic import BaseModel, Field
+
+
+class FileRecommendation(BaseModel):
+    """Schema for file recommendation."""
+    type: Literal["minimal", "standard", "complete"]
+    title: str
+    description: str
+    files: List[str]
+    reason: str
 
 
 class GenerationCreate(BaseModel):
@@ -17,6 +26,8 @@ class GenerationResponse(BaseModel):
     id: UUID
     user_id: UUID
     website_id: UUID
+    website_name: Optional[str] = None
+    website_url: Optional[str] = None
     status: str
     progress_percentage: int
     pages_crawled: int
@@ -31,6 +42,7 @@ class GenerationResponse(BaseModel):
     started_at: Optional[datetime] = None
     completed_at: Optional[datetime] = None
     duration_seconds: Optional[float] = None
+    recommendation: Optional[FileRecommendation] = None
     
     class Config:
         from_attributes = True
@@ -65,6 +77,7 @@ class GenerationStatusResponse(BaseModel):
     completed_at: Optional[datetime] = None
     duration_seconds: Optional[float] = None
     can_download: bool
+    recommendation: Optional[FileRecommendation] = None
 
 
 class QuotaCheckResponse(BaseModel):

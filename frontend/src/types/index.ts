@@ -94,20 +94,33 @@ export interface WebsiteUpdate {
 
 // Generation types
 export type GenerationStatus = 'pending' | 'processing' | 'completed' | 'failed'
+export type RecommendationType = 'minimal' | 'standard' | 'complete'
+
+export interface FileRecommendation {
+  type: RecommendationType
+  title: string
+  description: string
+  files: string[]
+  reason: string
+}
 
 export interface Generation {
   id: string
   user_id: string
   website_id: string
+  website_name?: string
+  website_url?: string
   status: GenerationStatus
   file_path: string | null
   file_size: number | null
   total_files: number | null
+  total_pages: number | null
   error_message: string | null
   started_at: string | null
   completed_at: string | null
   created_at: string
   updated_at: string
+  recommendation?: FileRecommendation
 }
 
 // Statistics types
