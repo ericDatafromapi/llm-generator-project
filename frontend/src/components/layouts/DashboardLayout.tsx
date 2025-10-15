@@ -1,16 +1,17 @@
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/store/authStore'
 import { Button } from '@/components/ui/button'
-import { 
-  LayoutDashboard, 
-  Globe, 
-  FileStack, 
-  CreditCard, 
-  LogOut, 
+import {
+  LayoutDashboard,
+  Globe,
+  FileStack,
+  CreditCard,
+  LogOut,
   Menu,
   X,
   Sparkles,
-  User
+  User,
+  Settings
 } from 'lucide-react'
 import { useState } from 'react'
 import {
@@ -28,6 +29,7 @@ const navigation = [
   { name: 'Websites', href: '/dashboard/websites', icon: Globe },
   { name: 'Generations', href: '/dashboard/generations', icon: FileStack },
   { name: 'Subscription', href: '/dashboard/subscription', icon: CreditCard },
+  { name: 'Profile', href: '/dashboard/profile', icon: Settings },
 ]
 
 export default function DashboardLayout() {
@@ -132,16 +134,7 @@ export default function DashboardLayout() {
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => navigate('/dashboard')}>
-                  <User className="mr-2 h-4 w-4" />
-                  Profile
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate('/dashboard/subscription')}>
-                  <CreditCard className="mr-2 h-4 w-4" />
-                  Subscription
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem 
+                <DropdownMenuItem
                   onClick={handleLogout}
                   className="text-destructive focus:text-destructive"
                 >

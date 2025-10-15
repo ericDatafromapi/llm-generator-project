@@ -430,6 +430,150 @@ class EmailService:
             html_content=html_content,
             text_content=text_content
         )
+    async def send_cooling_off_refund_email(
+        self,
+        to_email: str,
+        user_name: str,
+        refund_amount: float,
+        usage_charge: float,
+        generations_used: int
+    ) -> bool:
+        """
+        Send email confirmation for EU cooling-off period refund.
+        
+        Args:
+            to_email: Recipient email
+            user_name: User's name
+            refund_amount: Amount being refunded
+            usage_charge: Amount charged for usage
+            generations_used: Number of generations created
+        
+        Returns:
+            True if email sent successfully
+        """
+        name_greeting = f"Hi {user_name}," if user_name else "Hi there,"
+        
+        html_content = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+                <h1 style="color: white; margin: 0;">💰 14-Day Refund Processed</h1>
+            </div>
+            
+            <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px;">
+                <p style="font-size: 16px;">{name_greeting}</p>
+                
+                <p style="font-size: 16px;">We've processed your subscription cancellation within the 14-day cooling-off period as per EU regulations.</p>
+                
+                <div style="background: #fff; padding: 20px; border-radius: 8px; margin: 20px 0; border: 1px solid #e5e7eb;">
+                    <h3 style="margin-top: 0; color: #667eea;">Refund Breakdown</h3>
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <tr style="border-bottom: 1px solid #e5e7eb;">
+                            <td style="padding: 12px 0; color: #666;">Generations Created:</td>
+                            <td style="padding: 12px 0; text-align: right; font-weight: bold;">
+                                {generations_used}
+                            </td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #e5e7eb;">
+                            <td style="padding: 12px 0; color: #666;">Usage Charge:</td>
+                            <td style="padding: 12px 0; text-align: right; font-weight: bold; color: #e74c3c;">
+                                -€{usage_charge:.2f}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 16px 0 0 0; font-size: 18px; font-weight: bold;">Refund Amount:</td>
+                            <td style="padding: 16px 0 0 0; text-align: right; font-weight: bold; font-size: 20px; color: #10b981;">
+                                €{refund_amount:.2f}
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <div style="background: #eff6ff; padding: 15px; border-radius: 5px; border-left: 4px solid #3b82f6; margin: 20px 0;">
+                    <p style="margin: 0; font-size: 14px; color: #1e40af;">
+                        <strong>Refund Timeline:</strong> 5-10 business days to your original payment method
+                    </p>
+                </div>
+                
+                <p style="font-size: 14px; color: #666;">
+                    Your account has been downgraded to the <strong>Free plan</strong>. You can still:
+                </p>
+                <ul style="font-size: 14px; color: #666;">
+                    <li>Create 1 website</li>
+                    <li>Generate 1 llms.txt file per month</li>
+                    <li>Access all your existing data</li>
+                </ul>
+                
+                <p style="font-size: 14px; color: #666;">
+                    We'd love to hear why you're leaving. Your feedback helps us improve!
+                </p>
+                
+                <div style="text-align: center; margin: 30px 0;">
+                    <a href="{settings.FRONTEND_URL}/dashboard"
+                       style="background: #f3f4f6;
+                              color: #667eea;
+                              padding: 12px 30px;
+                              text-decoration: none;
+                              border-radius: 5px;
+                              font-weight: bold;
+                              display: inline-block;
+                              border: 2px solid #667eea;">
+                        Go to Dashboard
+                    </a>
+                </div>
+                
+                <p style="font-size: 12px; color: #999; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+                    <strong>EU Consumer Rights:</strong> This refund was processed under EU Consumer Rights Directive (2011/83/EU) - 14-day cooling-off period.
+                </p>
+            </div>
+            
+            <div style="text-align: center; margin-top: 20px; color: #999; font-size: 12px;">
+                <p>© 2025 LLMReady. All rights reserved.</p>
+            </div>
+        </body>
+        </html>
+        """
+        
+        text_content = f"""
+        {name_greeting}
+        
+        We've processed your subscription cancellation within the 14-day cooling-off period as per EU regulations.
+        
+        REFUND BREAKDOWN:
+        ------------------
+        Generations Created: {generations_used}
+        Usage Charge: -€{usage_charge:.2f}
+        Refund Amount: €{refund_amount:.2f}
+        
+        Refund Timeline: 5-10 business days to your original payment method
+        
+        Your account has been downgraded to the Free plan. You can still:
+        - Create 1 website
+        - Generate 1 llms.txt file per month
+        - Access all your existing data
+        
+        We'd love to hear why you're leaving. Your feedback helps us improve!
+        
+        Dashboard: {settings.FRONTEND_URL}/dashboard
+        
+        EU Consumer Rights: This refund was processed under EU Consumer Rights Directive (2011/83/EU) - 14-day cooling-off period.
+        
+        Best regards,
+        The LLMReady Team
+        """
+        
+        return await self.send_email(
+            to_email=to_email,
+            subject="Refund Processed - 14-Day Cooling-Off Period",
+            html_content=html_content,
+            text_content=text_content
+        )
+
     async def send_contact_form_email(
         self,
         from_name: str,

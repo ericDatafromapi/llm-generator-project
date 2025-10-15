@@ -48,7 +48,7 @@ export default function GenerationsPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [searchQuery, setSearchQuery] = useState('')
 
-  // Fetch generations
+  // Fetch generations with auto-refresh for active ones
   const { data: generationsData, isLoading } = useQuery({
     queryKey: ['generations', statusFilter],
     queryFn: async () => {
@@ -58,6 +58,13 @@ export default function GenerationsPage() {
       }
       const response = await api.get<PaginatedResponse<Generation>>(url)
       return response.data
+    },
+    // Auto-refresh every 5 seconds if there are pending/processing generations
+    refetchInterval: (query) => {
+      const hasActiveGenerations = query?.state?.data?.items?.some(
+        (gen: Generation) => gen.status === 'pending' || gen.status === 'processing'
+      )
+      return hasActiveGenerations ? 5000 : false
     },
   })
 

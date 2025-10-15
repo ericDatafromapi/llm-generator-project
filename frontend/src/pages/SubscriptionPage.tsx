@@ -152,7 +152,7 @@ export default function SubscriptionPage() {
   // Get customer portal link
   const portalMutation = useMutation({
     mutationFn: async () => {
-      const response = await api.get<{ portal_url: string }>('/api/v1/subscriptions/portal')
+      const response = await api.post<{ portal_url: string }>('/api/v1/subscriptions/portal')
       return response.data
     },
     onSuccess: (data) => {

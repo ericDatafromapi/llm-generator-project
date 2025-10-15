@@ -42,7 +42,10 @@ class SubscriptionService:
         cancel_url: Optional[str] = None
     ) -> CheckoutSessionResponse:
         """
-        Create a Stripe checkout session for subscription.
+        Create a Stripe checkout session or modify existing subscription.
+        
+        IMPORTANT: If user has an active paid subscription, this will MODIFY it
+        with proration instead of creating a new subscription.
         
         Args:
             user: User subscribing
@@ -52,7 +55,7 @@ class SubscriptionService:
             cancel_url: Custom cancel URL (optional)
             
         Returns:
-            CheckoutSessionResponse with checkout URL
+            CheckoutSessionResponse with checkout URL or redirect URL
         """
         # Validate plan type
         if plan_type not in [PlanType.STARTER, PlanType.STANDARD, PlanType.PRO]:
@@ -62,9 +65,58 @@ class SubscriptionService:
         if billing_interval not in ['monthly', 'yearly']:
             billing_interval = 'monthly'
         
-        # Get or create Stripe customer
+        # Get user's subscription
         subscription = self.get_user_subscription(user.id)
         
+        # If user has an active PAID subscription, modify it instead of creating new one
+        if subscription and subscription.stripe_subscription_id and subscription.plan_type != 'free':
+            logger.info(f"User {user.id} has existing subscription {subscription.stripe_subscription_id}, modifying instead of creating new")
+            
+            # Get new price ID
+            price_id_map = {
+                ('starter', 'monthly'): settings.STRIPE_PRICE_STARTER_MONTHLY,
+                ('starter', 'yearly'): settings.STRIPE_PRICE_STARTER_YEARLY,
+                ('standard', 'monthly'): settings.STRIPE_PRICE_STANDARD_MONTHLY,
+                ('standard', 'yearly'): settings.STRIPE_PRICE_STANDARD_YEARLY,
+                ('pro', 'monthly'): settings.STRIPE_PRICE_PRO_MONTHLY,
+                ('pro', 'yearly'): settings.STRIPE_PRICE_PRO_YEARLY,
+            }
+            
+            new_price_id = price_id_map.get((plan_type, billing_interval))
+            if not new_price_id:
+                raise ValueError(f"No Stripe price ID configured for {plan_type} ({billing_interval})")
+            
+            # Retrieve current subscription from Stripe
+            stripe_subscription = stripe.Subscription.retrieve(subscription.stripe_subscription_id)
+            
+            # Get current subscription item ID
+            if not stripe_subscription.items.data:
+                raise ValueError("No subscription items found")
+            
+            subscription_item_id = stripe_subscription.items.data[0].id
+            
+            # Modify subscription with proration
+            updated_subscription = stripe.Subscription.modify(
+                subscription.stripe_subscription_id,
+                items=[{
+                    'id': subscription_item_id,
+                    'price': new_price_id,
+                }],
+                proration_behavior='create_prorations',  # Automatic proration
+            )
+            
+            logger.info(f"✅ Modified subscription {subscription.stripe_subscription_id} to {plan_type} with proration")
+            
+            # Return success URL directly (no checkout needed)
+            if not success_url:
+                success_url = f"{settings.FRONTEND_URL}/dashboard/subscription?upgraded=true"
+            
+            return CheckoutSessionResponse(
+                checkout_url=success_url,
+                session_id=subscription.stripe_subscription_id
+            )
+        
+        # User has no paid subscription - create checkout session for new subscription
         if subscription and subscription.stripe_customer_id:
             customer_id = subscription.stripe_customer_id
         else:
@@ -104,7 +156,7 @@ class SubscriptionService:
         if not cancel_url:
             cancel_url = f"{settings.FRONTEND_URL}/pricing?canceled=true"
         
-        # Create checkout session
+        # Create checkout session with Terms of Service consent
         session = stripe.checkout.Session.create(
             customer=customer_id,
             payment_method_types=['card'],
@@ -121,7 +173,11 @@ class SubscriptionService:
                 "billing_interval": billing_interval
             },
             allow_promotion_codes=True,
-            billing_address_collection='required'
+            billing_address_collection='required',
+            # ⭐ Require Terms of Service acceptance (EU compliance)
+            consent_collection={
+                'terms_of_service': 'required',
+            },
         )
         
         return CheckoutSessionResponse(

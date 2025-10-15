@@ -2,11 +2,14 @@ import { useEffect } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuthStore } from '@/store/authStore'
 import { Toaster } from '@/components/ui/toaster'
+import ErrorBoundary from '@/components/ErrorBoundary'
 
 // Pages
 import LandingPage from '@/pages/LandingPage'
 import PricingPage from '@/pages/PricingPage'
 import ContactPage from '@/pages/ContactPage'
+import TermsPage from '@/pages/TermsPage'
+import PrivacyPage from '@/pages/PrivacyPage'
 import LoginPage from '@/pages/LoginPage'
 import RegisterPage from '@/pages/RegisterPage'
 import DashboardLayout from '@/components/layouts/DashboardLayout'
@@ -14,6 +17,7 @@ import DashboardPage from '@/pages/DashboardPage'
 import WebsitesPage from '@/pages/WebsitesPage'
 import GenerationsPage from '@/pages/GenerationsPage'
 import SubscriptionPage from '@/pages/SubscriptionPage'
+import ProfilePage from '@/pages/ProfilePage'
 
 // Protected Route wrapper
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -44,12 +48,14 @@ function App() {
   }, [checkAuth])
 
   return (
-    <>
+    <ErrorBoundary>
       <Routes>
         {/* Public routes */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/pricing" element={<PricingPage />} />
         <Route path="/contact" element={<ContactPage />} />
+        <Route path="/terms" element={<TermsPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
 
@@ -66,6 +72,7 @@ function App() {
           <Route path="websites" element={<WebsitesPage />} />
           <Route path="generations" element={<GenerationsPage />} />
           <Route path="subscription" element={<SubscriptionPage />} />
+          <Route path="profile" element={<ProfilePage />} />
         </Route>
 
         {/* Fallback */}
@@ -73,7 +80,7 @@ function App() {
       </Routes>
       
       <Toaster />
-    </>
+    </ErrorBoundary>
   )
 }
 

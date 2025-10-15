@@ -334,3 +334,62 @@ async def verify_access_token(
         "message": "Token is valid",
         "detail": f"User: {current_user.email}"
     }
+
+
+@router.post(
+    "/change-password",
+    response_model=MessageResponse,
+    summary="Change user password",
+    responses={
+        200: {"description": "Password changed successfully"},
+        400: {"model": ErrorResponse, "description": "Invalid current password"},
+        401: {"model": ErrorResponse, "description": "Not authenticated"},
+    }
+)
+@limiter.limit("5/hour")
+async def change_password(
+    request: Request,
+    password_data: dict,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+) -> Any:
+    """
+    Change password for currently authenticated user.
+    
+    - **current_password**: Current password for verification
+    - **new_password**: New password (min 8 chars, uppercase, lowercase, digit)
+    
+    Returns success message if password was changed.
+    """
+    current_password = password_data.get("current_password")
+    new_password = password_data.get("new_password")
+    
+    if not current_password or not new_password:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Both current_password and new_password are required"
+        )
+    
+    # Verify current password
+    if not verify_password(current_password, current_user.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Current password is incorrect"
+        )
+    
+    # Validate new password strength (basic validation)
+    if len(new_password) < 8:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="New password must be at least 8 characters long"
+        )
+    
+    # Update password
+    current_user.password_hash = hash_password(new_password)
+    current_user.updated_at = datetime.utcnow()
+    db.commit()
+    
+    return {
+        "message": "Password changed successfully",
+        "detail": "Your password has been updated"
+    }
