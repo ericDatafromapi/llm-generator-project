@@ -36,4 +36,7 @@ python-dateutil==2.8.2
 slowapi==0.1.9
 
 # Email (Week 3)
-sendgrid==6.11.0stripe==13.0.1
+sendgrid==6.11.0
+
+# Stripe (Week 4-5)
+stripe==13.0.1

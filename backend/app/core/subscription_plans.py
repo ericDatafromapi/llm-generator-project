@@ -1,6 +1,6 @@
 """
 Subscription plans configuration.
-Defines the three tiers: Free, Standard, and Pro.
+Defines the four tiers: Free, Starter, Standard, and Pro with monthly and yearly billing.
 """
 from typing import Dict, Any
 from enum import Enum
@@ -9,17 +9,24 @@ from enum import Enum
 class PlanType(str, Enum):
     """Subscription plan types."""
     FREE = "free"
+    STARTER = "starter"
     STANDARD = "standard"
     PRO = "pro"
+
+
+class BillingInterval(str, Enum):
+    """Billing intervals."""
+    MONTHLY = "monthly"
+    YEARLY = "yearly"
 
 
 # Plan Features and Limits
 PLAN_FEATURES: Dict[str, Dict[str, Any]] = {
     PlanType.FREE: {
         "name": "Free",
-        "price": 0,
+        "price_monthly": 0,
+        "price_yearly": 0,
         "currency": "eur",
-        "interval": "month",
         "generations_limit": 1,
         "max_websites": 1,
         "max_pages_per_website": 100,
@@ -27,14 +34,32 @@ PLAN_FEATURES: Dict[str, Dict[str, Any]] = {
             "1 generation per month",
             "1 website",
             "Up to 100 pages",
-            "Basic support"
+            "Basic support",
+            "llms.txt files"
+        ]
+    },
+    PlanType.STARTER: {
+        "name": "Starter",
+        "price_monthly": 19,
+        "price_yearly": 171,  # €14.25/month with 25% discount
+        "currency": "eur",
+        "generations_limit": 3,
+        "max_websites": 2,
+        "max_pages_per_website": 200,
+        "features": [
+            "3 generations per month",
+            "2 websites",
+            "Up to 200 pages",
+            "Priority support",
+            "llms.txt files",
+            "Email notifications"
         ]
     },
     PlanType.STANDARD: {
         "name": "Standard",
-        "price": 29,
+        "price_monthly": 39,
+        "price_yearly": 351,  # €29.25/month with 25% discount
         "currency": "eur",
-        "interval": "month",
         "generations_limit": 10,
         "max_websites": 5,
         "max_pages_per_website": 500,
@@ -43,14 +68,15 @@ PLAN_FEATURES: Dict[str, Dict[str, Any]] = {
             "5 websites",
             "Up to 500 pages per site",
             "Priority support",
-            "Email notifications"
+            "llms.txt + full content",
+            "Automatic updates"
         ]
     },
     PlanType.PRO: {
         "name": "Pro",
-        "price": 59,
+        "price_monthly": 79,
+        "price_yearly": 711,  # €59.25/month with 25% discount
         "currency": "eur",
-        "interval": "month",
         "generations_limit": 25,
         "max_websites": 999,  # "unlimited"
         "max_pages_per_website": 1000,
@@ -59,9 +85,10 @@ PLAN_FEATURES: Dict[str, Dict[str, Any]] = {
             "Unlimited websites",
             "Up to 1000 pages per site",
             "Premium support",
-            "Advanced analytics",
+            "llms.txt + full content",
+            "Automatic updates",
             "API access",
-            "Custom configurations"
+            "Custom integrations"
         ]
     }
 }
@@ -90,10 +117,15 @@ def get_plan_info(plan_type: str) -> Dict[str, Any]:
 
 def is_upgrade(current_plan: str, new_plan: str) -> bool:
     """Check if new plan is an upgrade from current."""
-    plan_order = [PlanType.FREE, PlanType.STANDARD, PlanType.PRO]
+    plan_order = [PlanType.FREE, PlanType.STARTER, PlanType.STANDARD, PlanType.PRO]
     try:
         current_idx = plan_order.index(current_plan)
         new_idx = plan_order.index(new_plan)
         return new_idx > current_idx
     except ValueError:
         return False
+
+
+def get_yearly_discount_percent() -> int:
+    """Get the yearly billing discount percentage."""
+    return 25  # 25% discount for yearly billing

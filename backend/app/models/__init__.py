@@ -8,6 +8,7 @@ from app.models.website import Website
 from app.models.generation import Generation
 from app.models.password_reset_token import PasswordResetToken
 from app.models.email_verification_token import EmailVerificationToken
+from app.models.stripe_event import StripeEvent
 
 __all__ = [
     "User",
@@ -16,4 +17,5 @@ __all__ = [
     "Generation",
     "PasswordResetToken",
     "EmailVerificationToken",
+    "StripeEvent",
 ]

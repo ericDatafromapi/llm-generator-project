@@ -11,7 +11,7 @@ import logging
 from app.core.config import settings
 from app.core.database import engine, Base
 from app.core.rate_limit import limiter, rate_limit_exceeded_handler
-from app.api.v1 import auth, password_reset, email_verification, subscriptions, webhooks
+from app.api.v1 import auth, password_reset, email_verification, subscriptions, webhooks, generations, websites, contact, refunds
 
 # Configure logging
 logging.basicConfig(
@@ -128,15 +128,37 @@ app.include_router(
 # API v1 routes - Subscriptions & Payments
 app.include_router(
     subscriptions.router,
-    prefix=settings.API_V1_PREFIX,
-    tags=["Subscriptions"]
+    prefix=settings.API_V1_PREFIX
 )
 
 # Webhook routes (no auth required)
 app.include_router(
     webhooks.router,
-    prefix=settings.API_V1_PREFIX,
-    tags=["Webhooks"]
+    prefix=settings.API_V1_PREFIX
+)
+
+# API v1 routes - Generations
+app.include_router(
+    generations.router,
+    prefix=settings.API_V1_PREFIX
+)
+
+# API v1 routes - Websites
+app.include_router(
+    websites.router,
+    prefix=settings.API_V1_PREFIX
+)
+
+# API v1 routes - Contact (public)
+app.include_router(
+    contact.router,
+    prefix=settings.API_V1_PREFIX
+)
+
+# API v1 routes - Refunds (EU cooling-off period)
+app.include_router(
+    refunds.router,
+    prefix=settings.API_V1_PREFIX
 )
 
 

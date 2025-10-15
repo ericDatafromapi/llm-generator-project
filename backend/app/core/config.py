@@ -24,8 +24,10 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "postgresql://postgres:postgres@localhost:5432/llmready_dev"
     DATABASE_ECHO: bool = False
     
-    # Redis
+    # Redis & Celery
     REDIS_URL: str = "redis://localhost:6379/0"
+    CELERY_BROKER_URL: str = "redis://localhost:6379/0"
+    CELERY_RESULT_BACKEND: str = "redis://localhost:6379/0"
     
     # Security
     SECRET_KEY: str = "your-secret-key-change-in-production-min-32-chars"
@@ -53,16 +55,32 @@ class Settings(BaseSettings):
     # Subscription Plans Configuration
     # These should match your Stripe Dashboard product/price IDs
     STRIPE_PRICE_FREE: str = ""  # Free plan (no Stripe product needed)
-    STRIPE_PRICE_STANDARD: str = "price_standard_monthly"  # Replace with actual price ID
-    STRIPE_PRICE_PRO: str = "price_pro_monthly"  # Replace with actual price ID
+    
+    # Starter Plan (NEW)
+    STRIPE_PRICE_STARTER_MONTHLY: str = ""  # Replace with actual price ID
+    STRIPE_PRICE_STARTER_YEARLY: str = ""   # Replace with actual price ID
+    
+    # Standard Plan
+    STRIPE_PRICE_STANDARD: str = ""  # Legacy - kept for backward compatibility
+    STRIPE_PRICE_STANDARD_MONTHLY: str = ""  # Replace with actual price ID
+    STRIPE_PRICE_STANDARD_YEARLY: str = ""   # Replace with actual price ID
+    
+    # Pro Plan
+    STRIPE_PRICE_PRO: str = ""  # Legacy - kept for backward compatibility
+    STRIPE_PRICE_PRO_MONTHLY: str = ""  # Replace with actual price ID
+    STRIPE_PRICE_PRO_YEARLY: str = ""   # Replace with actual price ID
     
     # Email (for Week 3)
     SENDGRID_API_KEY: str = ""
     FROM_EMAIL: str = "noreply@yourdomain.com"
     
     # File Storage
-    FILE_STORAGE_PATH: str = "/var/llmready/files"
+    FILE_STORAGE_PATH: str = "./storage/files"  # Use local directory instead of /var
     MAX_FILE_SIZE_MB: int = 500
+    
+    # Generation Settings
+    GENERATION_TIMEOUT: int = 3600  # 1 hour in seconds
+    GENERATION_MAX_RETRIES: int = 2
     
     # Rate Limiting
     RATE_LIMIT_PER_MINUTE: int = 60

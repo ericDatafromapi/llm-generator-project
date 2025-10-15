@@ -2,11 +2,14 @@
 Subscription service for managing Stripe subscriptions and quotas.
 """
 import stripe
+import logging
 from typing import Optional
 from datetime import datetime
 from uuid import UUID
 from sqlalchemy.orm import Session
 from sqlalchemy import select, func
+
+logger = logging.getLogger(__name__)
 
 from app.core.config import settings
 from app.core.subscription_plans import PlanType, PLAN_FEATURES, get_plan_limits, get_plan_info
@@ -34,28 +37,86 @@ class SubscriptionService:
         self,
         user: User,
         plan_type: str,
+        billing_interval: str = 'monthly',
         success_url: Optional[str] = None,
         cancel_url: Optional[str] = None
     ) -> CheckoutSessionResponse:
         """
-        Create a Stripe checkout session for subscription.
+        Create a Stripe checkout session or modify existing subscription.
+        
+        IMPORTANT: If user has an active paid subscription, this will MODIFY it
+        with proration instead of creating a new subscription.
         
         Args:
             user: User subscribing
-            plan_type: Plan to subscribe to (standard or pro)
+            plan_type: Plan to subscribe to (starter, standard, or pro)
+            billing_interval: Billing interval (monthly or yearly)
             success_url: Custom success URL (optional)
             cancel_url: Custom cancel URL (optional)
             
         Returns:
-            CheckoutSessionResponse with checkout URL
+            CheckoutSessionResponse with checkout URL or redirect URL
         """
         # Validate plan type
-        if plan_type not in [PlanType.STANDARD, PlanType.PRO]:
-            raise ValueError(f"Invalid plan type: {plan_type}. Must be 'standard' or 'pro'")
+        if plan_type not in [PlanType.STARTER, PlanType.STANDARD, PlanType.PRO]:
+            raise ValueError(f"Invalid plan type: {plan_type}. Must be 'starter', 'standard', or 'pro'")
         
-        # Get or create Stripe customer
+        # Validate billing interval
+        if billing_interval not in ['monthly', 'yearly']:
+            billing_interval = 'monthly'
+        
+        # Get user's subscription
         subscription = self.get_user_subscription(user.id)
         
+        # If user has an active PAID subscription, modify it instead of creating new one
+        if subscription and subscription.stripe_subscription_id and subscription.plan_type != 'free':
+            logger.info(f"User {user.id} has existing subscription {subscription.stripe_subscription_id}, modifying instead of creating new")
+            
+            # Get new price ID
+            price_id_map = {
+                ('starter', 'monthly'): settings.STRIPE_PRICE_STARTER_MONTHLY,
+                ('starter', 'yearly'): settings.STRIPE_PRICE_STARTER_YEARLY,
+                ('standard', 'monthly'): settings.STRIPE_PRICE_STANDARD_MONTHLY,
+                ('standard', 'yearly'): settings.STRIPE_PRICE_STANDARD_YEARLY,
+                ('pro', 'monthly'): settings.STRIPE_PRICE_PRO_MONTHLY,
+                ('pro', 'yearly'): settings.STRIPE_PRICE_PRO_YEARLY,
+            }
+            
+            new_price_id = price_id_map.get((plan_type, billing_interval))
+            if not new_price_id:
+                raise ValueError(f"No Stripe price ID configured for {plan_type} ({billing_interval})")
+            
+            # Retrieve current subscription from Stripe
+            stripe_subscription = stripe.Subscription.retrieve(subscription.stripe_subscription_id)
+            
+            # Get current subscription item ID
+            if not stripe_subscription.items.data:
+                raise ValueError("No subscription items found")
+            
+            subscription_item_id = stripe_subscription.items.data[0].id
+            
+            # Modify subscription with proration
+            updated_subscription = stripe.Subscription.modify(
+                subscription.stripe_subscription_id,
+                items=[{
+                    'id': subscription_item_id,
+                    'price': new_price_id,
+                }],
+                proration_behavior='create_prorations',  # Automatic proration
+            )
+            
+            logger.info(f"✅ Modified subscription {subscription.stripe_subscription_id} to {plan_type} with proration")
+            
+            # Return success URL directly (no checkout needed)
+            if not success_url:
+                success_url = f"{settings.FRONTEND_URL}/dashboard/subscription?upgraded=true"
+            
+            return CheckoutSessionResponse(
+                checkout_url=success_url,
+                session_id=subscription.stripe_subscription_id
+            )
+        
+        # User has no paid subscription - create checkout session for new subscription
         if subscription and subscription.stripe_customer_id:
             customer_id = subscription.stripe_customer_id
         else:
@@ -65,7 +126,7 @@ class SubscriptionService:
                 name=user.full_name,
                 metadata={
                     "user_id": str(user.id),
-                    "plan_type": plan_type
+                    "plan_type": plan_type.value if hasattr(plan_type, 'value') else plan_type
                 }
             )
             customer_id = customer.id
@@ -75,11 +136,19 @@ class SubscriptionService:
                 subscription.stripe_customer_id = customer_id
                 self.db.commit()
         
-        # Get price ID based on plan
-        price_id = (
-            settings.STRIPE_PRICE_STANDARD if plan_type == PlanType.STANDARD
-            else settings.STRIPE_PRICE_PRO
-        )
+        # Get price ID based on plan and billing interval
+        price_id_map = {
+            ('starter', 'monthly'): settings.STRIPE_PRICE_STARTER_MONTHLY,
+            ('starter', 'yearly'): settings.STRIPE_PRICE_STARTER_YEARLY,
+            ('standard', 'monthly'): settings.STRIPE_PRICE_STANDARD_MONTHLY,
+            ('standard', 'yearly'): settings.STRIPE_PRICE_STANDARD_YEARLY,
+            ('pro', 'monthly'): settings.STRIPE_PRICE_PRO_MONTHLY,
+            ('pro', 'yearly'): settings.STRIPE_PRICE_PRO_YEARLY,
+        }
+        
+        price_id = price_id_map.get((plan_type, billing_interval))
+        if not price_id:
+            raise ValueError(f"No Stripe price ID configured for {plan_type} ({billing_interval})")
         
         # Set default URLs if not provided
         if not success_url:
@@ -87,7 +156,7 @@ class SubscriptionService:
         if not cancel_url:
             cancel_url = f"{settings.FRONTEND_URL}/pricing?canceled=true"
         
-        # Create checkout session
+        # Create checkout session with Terms of Service consent
         session = stripe.checkout.Session.create(
             customer=customer_id,
             payment_method_types=['card'],
@@ -100,10 +169,15 @@ class SubscriptionService:
             cancel_url=cancel_url,
             metadata={
                 "user_id": str(user.id),
-                "plan_type": plan_type
+                "plan_type": plan_type.value if hasattr(plan_type, 'value') else plan_type,
+                "billing_interval": billing_interval
             },
             allow_promotion_codes=True,
-            billing_address_collection='required'
+            billing_address_collection='required',
+            # ⭐ Require Terms of Service acceptance (EU compliance)
+            consent_collection={
+                'terms_of_service': 'required',
+            },
         )
         
         return CheckoutSessionResponse(
@@ -237,7 +311,7 @@ class SubscriptionService:
     
     def check_generation_quota(self, user_id: UUID) -> bool:
         """
-        Check if user has available generation quota.
+        Check if user has available generation quota with grace period support.
         
         Args:
             user_id: User ID to check
@@ -250,12 +324,25 @@ class SubscriptionService:
         if not subscription:
             return False
         
-        # Check if subscription is active
-        if subscription.status != "active":
-            return False
+        # Allowed statuses
+        ALLOWED_STATUSES = ["active", "trialing"]
+        GRACE_PERIOD_DAYS = 3
         
-        # Check if within limit
-        return subscription.generations_used < subscription.generations_limit
+        # Check status
+        if subscription.status in ALLOWED_STATUSES:
+            return subscription.generations_used < subscription.generations_limit
+        
+        # Grace period for past_due
+        if subscription.status == "past_due":
+            if subscription.updated_at:
+                days_past_due = (datetime.utcnow() - subscription.updated_at).days
+                if days_past_due <= GRACE_PERIOD_DAYS:
+                    logger.info(f"User {user_id} in grace period: {days_past_due}/{GRACE_PERIOD_DAYS} days")
+                    return subscription.generations_used < subscription.generations_limit
+                else:
+                    logger.warning(f"User {user_id} exceeded grace period: {days_past_due} days past due")
+        
+        return False
     
     def increment_usage(self, user_id: UUID) -> None:
         """
@@ -350,3 +437,86 @@ class SubscriptionService:
             subscription.websites_limit = limits["max_websites"]
         
         self.db.commit()
+    
+    def upgrade_subscription(self, user: User, new_plan_type: str) -> dict:
+        """
+        Upgrade subscription with proration.
+        
+        Args:
+            user: User upgrading subscription
+            new_plan_type: New plan type (standard or pro)
+            
+        Returns:
+            Dict with upgrade status and proration info
+        """
+        subscription = self.get_user_subscription(user.id)
+        
+        if not subscription or not subscription.stripe_subscription_id:
+            raise ValueError("No active subscription found")
+        
+        # Get new price ID
+        new_price_id = (
+            settings.STRIPE_PRICE_STANDARD if new_plan_type == "standard"
+            else settings.STRIPE_PRICE_PRO
+        )
+        
+        # Retrieve current subscription from Stripe
+        stripe_subscription = stripe.Subscription.retrieve(subscription.stripe_subscription_id)
+        
+        # Get current subscription item ID
+        if not stripe_subscription.items.data:
+            raise ValueError("No subscription items found")
+        
+        subscription_item_id = stripe_subscription.items.data[0].id
+        
+        # Update Stripe subscription with proration
+        updated_subscription = stripe.Subscription.modify(
+            subscription.stripe_subscription_id,
+            items=[{
+                'id': subscription_item_id,
+                'price': new_price_id,
+            }],
+            proration_behavior='create_prorations',  # Enable proration
+        )
+        
+        logger.info(f"Subscription upgraded with proration: {subscription.stripe_subscription_id}")
+        
+        return {
+            "status": "upgraded",
+            "proration": "applied",
+            "new_plan": new_plan_type
+        }
+    
+    def cancel_user_subscription_on_deletion(self, user_id: UUID) -> None:
+        """
+        Cancel Stripe subscription when user account is deleted.
+        This prevents continued billing after account deletion.
+        
+        Args:
+            user_id: User ID being deleted
+        """
+        subscription = self.get_user_subscription(user_id)
+        
+        if not subscription:
+            logger.info(f"No subscription found for user {user_id} during deletion")
+            return
+        
+        if subscription.stripe_subscription_id:
+            try:
+                # Cancel subscription in Stripe immediately
+                stripe.Subscription.delete(subscription.stripe_subscription_id)
+                logger.info(f"Canceled Stripe subscription {subscription.stripe_subscription_id} for deleted user {user_id}")
+            except stripe.error.StripeError as e:
+                logger.error(f"Failed to cancel Stripe subscription during user deletion: {e}")
+                # Don't raise - allow user deletion to proceed
+            except Exception as e:
+                logger.error(f"Unexpected error canceling subscription during user deletion: {e}")
+        
+        # Update local subscription record
+        subscription.status = "canceled"
+        subscription.plan_type = "free"
+        subscription.stripe_subscription_id = None
+        subscription.updated_at = datetime.utcnow()
+        self.db.commit()
+        
+        logger.info(f"Local subscription canceled for deleted user {user_id}")
