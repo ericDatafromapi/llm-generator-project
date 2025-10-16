@@ -291,11 +291,20 @@ jobs:
       - name: Determine status
         id: status
         run: |
-          if [[ "${{ needs.deploy-backend.result }}" == "success" ]] && \
-             [[ "${{ needs.deploy-frontend.result }}" == "success" ]]; then
+          BACKEND="${{ needs.deploy-backend.result }}"
+          FRONTEND="${{ needs.deploy-frontend.result }}"
+          
+          # Check if both succeeded
+          if [[ "$BACKEND" == "success" ]] && [[ "$FRONTEND" == "success" ]]; then
             echo "status=success" >> $GITHUB_OUTPUT
             echo "emoji=🚀" >> $GITHUB_OUTPUT
             echo "message=Deployment successful!" >> $GITHUB_OUTPUT
+          # Check if both skipped (docs-only push)
+          elif [[ "$BACKEND" == "skipped" ]] && [[ "$FRONTEND" == "skipped" ]]; then
+            echo "status=skipped" >> $GITHUB_OUTPUT
+            echo "emoji=⏭️" >> $GITHUB_OUTPUT
+            echo "message=Deployment skipped (docs-only changes)" >> $GITHUB_OUTPUT
+          # Otherwise it's a failure
           else
             echo "status=failure" >> $GITHUB_OUTPUT
             echo "emoji=❌" >> $GITHUB_OUTPUT
@@ -303,7 +312,7 @@ jobs:
           fi
       
       - name: Send success email
-        if: steps.status.outputs.status == 'success'
+        if: steps.status.outputs.status == 'success' && github.event_name != 'push'
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: ${{ secrets.MAIL_SERVER }}
@@ -326,8 +335,30 @@ jobs:
             View deployment: https://${{ secrets.PRODUCTION_DOMAIN }}
             View workflow: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
       
+      - name: Send skipped email
+        if: steps.status.outputs.status == 'skipped' && github.event_name == 'push'
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.MAIL_SERVER }}
+          server_port: ${{ secrets.MAIL_PORT }}
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          subject: "⏭️ Production Deployment Skipped"
+          to: ${{ secrets.NOTIFICATION_EMAIL }}
+          from: GitHub Actions <noreply@github.com>
+          body: |
+            ⏭️ Production deployment was skipped (documentation changes only)
+            
+            Commit: ${{ github.sha }}
+            Author: ${{ github.actor }}
+            Branch: ${{ github.ref_name }}
+            
+            Only documentation files were changed. No deployment needed.
+            
+            View workflow: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      
       - name: Send failure email
-        if: steps.status.outputs.status == 'failure'
+        if: steps.status.outputs.status == 'failure' && github.event_name != 'push'
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: ${{ secrets.MAIL_SERVER }}
