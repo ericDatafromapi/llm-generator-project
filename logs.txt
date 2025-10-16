@@ -1,1 +1,52 @@
-{"id":"6cd4815c-4689-4654-86b9-614983af7f97","email":"test@test.com","full_name":null,"is_active":true,"is_verified":false,"role":"user","created_at":"2025-10-16T11:32:19.895042","last_login_at":null}(venv) root@debian-8gb-hel1-llmgenerator:/opt/llmready/backend#
+Oct 16 12:00:58 debian-8gb-hel1-llmgenerator uvicorn[197879]: INFO:     Waiting for application startup.
+Oct 16 12:00:58 debian-8gb-hel1-llmgenerator uvicorn[197879]: {"timestamp": null, "level": "INFO", "name": "app.main", "message": "Starting LLMReady", "environment": "production", "service": "LLMReady", "module": "main", "function": "startup_event", "line": 84}
+Oct 16 12:00:58 debian-8gb-hel1-llmgenerator uvicorn[197879]: {"timestamp": null, "level": "INFO", "name": "app.main", "message": "Debug mode: False", "environment": "production", "service": "LLMReady", "module": "main", "function": "startup_event", "line": 85}
+Oct 16 12:00:58 debian-8gb-hel1-llmgenerator uvicorn[197879]: {"timestamp": null, "level": "INFO", "name": "app.main", "message": "Database: localhost:5432/llmready_prod", "environment": "production", "service": "LLMReady", "module": "main", "function": "startup_event", "line": 86}
+Oct 16 12:00:58 debian-8gb-hel1-llmgenerator uvicorn[197879]: INFO:     Application startup complete.
+Oct 16 12:00:58 debian-8gb-hel1-llmgenerator uvicorn[197879]: INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+Oct 16 12:03:24 debian-8gb-hel1-llmgenerator uvicorn[197879]: {"timestamp": null, "level": "WARNING", "name": "passlib.handlers.bcrypt", "message": "(trapped) error reading bcrypt version", "exc_info": "Traceback (most recent call last):\n  File \"/opt/llmready/venv/lib/python3.11/site-packages/passlib/handlers/bcrypt.py\", line 620, in _load_backend_mixin\n    version = _bcrypt.__about__.__version__\n              ^^^^^^^^^^^^^^^^^\nAttributeError: module 'bcrypt' has no attribute '__about__'", "environment": "production", "service": "LLMReady", "module": "bcrypt", "function": "_load_backend_mixin", "line": 622}
+Oct 16 12:03:25 debian-8gb-hel1-llmgenerator uvicorn[197879]: {"timestamp": null, "level": "INFO", "name": "app.services.email", "message": "Email sent successfully to eric29@yopmail.com", "environment": "production", "service": "LLMReady", "module": "email", "function": "send_email", "line": 76}
+Oct 16 12:04:01 debian-8gb-hel1-llmgenerator uvicorn[197879]: {"timestamp": null, "level": "INFO", "name": "app.services.email", "message": "Email sent successfully to test1@test.com", "environment": "production", "service": "LLMReady", "module": "email", "function": "send_email", "line": 76}
+Oct 16 12:09:33 debian-8gb-hel1-llmgenerator uvicorn[197879]: {"timestamp": null, "level": "INFO", "name": "app.services.email", "message": "Email sent successfully to eric29@yopmail.com", "environment": "production", "service": "LLMReady", "module": "email", "function": "send_email", "line": 76
+
+(venv) root@debian-8gb-hel1-llmgenerator:/opt/llmready# docker exec -it $(docker ps -qf "name=redis") redis-cli
+127.0.0.1:6379> KEYS *
+ 1) "_kombu.binding.scheduled"
+ 2) "_kombu.binding.celeryev"
+ 3) "generation"
+ 4) "backup4"
+ 5) "backup3"
+ 6) "backup2"
+ 7) "_kombu.binding.celery.pidbox"
+ 8) "scheduled"
+ 9) "_kombu.binding.celery"
+10) "_kombu.binding.generation"
+11) "backup1"
+127.0.0.1:6379> LLEN celery
+(integer) 0
+127.0.0.1:6379> LRANGE celery 0 -1
+(empty array)
+127.0.0.1:6379>
+(venv) root@debian-8gb-hel1-llmgenerator:/opt/llmready# grep REDIS_URL /opt/llmready/backend/.env
+REDIS_URL=redis://localhost:6379/0
+(venv) root@debian-8gb-hel1-llmgenerator:/opt/llmready# sudo systemctl cat llmready-celery-worker | grep REDIS
+(venv) root@debian-8gb-hel1-llmgenerator:/opt/llmready# cd backend/
+(venv) root@debian-8gb-hel1-llmgenerator:/opt/llmready/backend# python -c "
+from app.core.celery_app import celery_app
+print('Registered tasks:')
+for task in sorted(celery_app.tasks.keys()):
+    if 'app.' in task:
+        print(f'  - {task}')
+"
+Registered tasks:
+(venv) root@debian-8gb-hel1-llmgenerator:/opt/llmready/backend#
+
+Exception("Crawler failed: Exception during crawl: [Errno 2] No such file or directory: 'npx'")
+Oct 16 13:27:28 debian-8gb-hel1-llmgenerator celery-worker[217363]: [2025-10-16 13:27:28,636: ERROR/ForkPoolWorker-2] Generation 5a13db12-12be-43b3-8753-23c28817c6f4 failed: Crawler failed: Exception during crawl: [Errno 2] No such file or directory: 'npx'
+Oct 16 13:27:28 debian-8gb-hel1-llmgenerator celery-worker[217363]:     raise Exception(f"Crawler failed: {error_msg}")
+Oct 16 13:27:28 debian-8gb-hel1-llmgenerator celery-worker[217363]: Exception: Crawler failed: Exception during crawl: [Errno 2] No such file or directory: 'npx'
+Oct 16 13:27:28 debian-8gb-hel1-llmgenerator celery-worker[217363]: [2025-10-16 13:27:28,900: INFO/ForkPoolWorker-2] Task app.tasks.generation.generate_llm_content[7cd64857-3f8c-484e-a18b-c189c06296af] succeeded in 0.27570857600221643s: None
+Oct 16 13:27:59 debian-8gb-hel1-llmgenerator celery-worker[217363]: [2025-10-16 13:27:59,672: ERROR/ForkPoolWorker-2] Generation 18c9931b-6848-4081-8b6b-897878ee0fe5 failed: Crawler failed: Exception during crawl: [Errno 2] No such file or directory: 'npx'
+Oct 16 13:27:59 debian-8gb-hel1-llmgenerator celery-worker[217363]:     raise Exception(f"Crawler failed: {error_msg}")
+Oct 16 13:27:59 debian-8gb-hel1-llmgenerator celery-worker[217363]: Exception: Crawler failed: Exception during crawl: [Errno 2] No such file or directory: 'npx'
+Oct 16 13:28:00 debian-8gb-hel1-llmgenerator celery-worker[217363]: [2025-10-16 13:28:00,111: INFO/ForkPoolWorker-2] Task app.tasks.generation.generate_llm_content[74d6f23a-2351-4c96-bef4-62364f5cbcab] succeeded in 0.45086411599913845s: None

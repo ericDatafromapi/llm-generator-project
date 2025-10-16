@@ -41,7 +41,7 @@ router = APIRouter()
 
 @router.post(
     "/register",
-    response_model=UserResponse,
+    response_model=LoginResponse,
     status_code=status.HTTP_201_CREATED,
     summary="Register a new user",
     responses={
@@ -125,7 +125,21 @@ async def register(
         user_name=new_user.full_name
     )
     
-    return new_user
+    # Create tokens for immediate login
+    access_token = create_access_token(
+        data={"sub": str(new_user.id), "email": new_user.email}
+    )
+    refresh_token = create_refresh_token(
+        data={"sub": str(new_user.id)}
+    )
+    
+    return {
+        "user": new_user,
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "token_type": "bearer",
+        "expires_in": settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
+    }
 
 
 @router.post(
