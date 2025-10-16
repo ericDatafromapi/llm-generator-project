@@ -179,17 +179,33 @@ jobs:
               echo "⚠️  Please update backend/.env with production values!"
             fi
             
-            # Pull latest Docker images
+            # Pull latest Docker images (postgres & redis)
             echo "Pulling Docker images..."
             docker compose pull
             
-            # Run database migrations
-            echo "Running migrations..."
-            docker compose run --rm -e DATABASE_URL="${DATABASE_URL}" backend alembic upgrade head
+            # Start database services
+            echo "Starting database services..."
+            docker compose up -d
             
-            # Restart services with zero downtime
-            echo "Restarting services..."
-            docker compose up -d --build --force-recreate
+            # Wait for database to be ready
+            echo "Waiting for database..."
+            sleep 5
+            
+            # Run database migrations (directly, not in Docker)
+            echo "Running migrations..."
+            cd backend
+            source ../venv/bin/activate 2>/dev/null || python3 -m venv ../venv && source ../venv/bin/activate
+            pip install -q -r requirements.txt
+            alembic upgrade head
+            cd ..
+            
+            # Restart backend service (if using systemd)
+            if systemctl is-active --quiet llmready-backend; then
+              echo "Restarting backend service..."
+              sudo systemctl restart llmready-backend
+            else
+              echo "⚠️  Backend service not configured. Please set up systemd service or run manually."
+            fi
             
             # Wait for health check
             echo "Waiting for services to be healthy..."
