@@ -108,6 +108,11 @@ jobs:
           cat > .env.production << EOF
           VITE_API_URL=${{ secrets.PRODUCTION_API_URL }}
           VITE_STRIPE_PUBLIC_KEY=${{ secrets.STRIPE_PUBLIC_KEY }}
+          VITE_SENTRY_DSN=${{ secrets.FRONTEND_SENTRY_DSN }}
+          VITE_ENVIRONMENT=production
+          VITE_SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}
+          VITE_SENTRY_ORG=${{ secrets.SENTRY_ORG }}
+          VITE_SENTRY_PROJECT=${{ secrets.SENTRY_FRONTEND_PROJECT }}
           EOF
           npm run build
       
@@ -172,8 +177,28 @@ jobs:
             tar -xzf /tmp/backend.tar.gz
             rm /tmp/backend.tar.gz
             
-            # Create production .env if not exists
-            if [ ! -f backend/.env ]; then
+            # Update backend .env with Sentry configuration
+            if [ -f backend/.env ]; then
+              echo "Updating .env with Sentry configuration..."
+              # Update or add Sentry DSN
+              if grep -q "^SENTRY_DSN=" backend/.env; then
+                sed -i "s|^SENTRY_DSN=.*|SENTRY_DSN=${{ secrets.BACKEND_SENTRY_DSN }}|" backend/.env
+              else
+                echo "SENTRY_DSN=${{ secrets.BACKEND_SENTRY_DSN }}" >> backend/.env
+              fi
+              # Ensure production environment
+              if grep -q "^ENVIRONMENT=" backend/.env; then
+                sed -i "s|^ENVIRONMENT=.*|ENVIRONMENT=production|" backend/.env
+              else
+                echo "ENVIRONMENT=production" >> backend/.env
+              fi
+              # Set sample rates for production
+              if grep -q "^SENTRY_TRACES_SAMPLE_RATE=" backend/.env; then
+                sed -i "s|^SENTRY_TRACES_SAMPLE_RATE=.*|SENTRY_TRACES_SAMPLE_RATE=0.1|" backend/.env
+              else
+                echo "SENTRY_TRACES_SAMPLE_RATE=0.1" >> backend/.env
+              fi
+            else
               echo "Creating .env from template..."
               cp backend/.env.production.example backend/.env
               echo "⚠️  Please update backend/.env with production values!"
