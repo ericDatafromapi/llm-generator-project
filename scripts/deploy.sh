@@ -105,7 +105,7 @@ RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
     -d "{\"ref\":\"${CURRENT_BRANCH}\",\"inputs\":{\"confirm\":\"deploy\"}}")
 
 HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
-BODY=$(echo "$RESPONSE" | head -n-1)
+BODY=$(echo "$RESPONSE" | sed '$d')
 
 if [ "$HTTP_CODE" -eq 204 ]; then
     echo -e "${GREEN}✅ Deployment workflow triggered successfully!${NC}\n"
