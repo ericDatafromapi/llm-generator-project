@@ -1,0 +1,1 @@
+{"id":"6cd4815c-4689-4654-86b9-614983af7f97","email":"test@test.com","full_name":null,"is_active":true,"is_verified":false,"role":"user","created_at":"2025-10-16T11:32:19.895042","last_login_at":null}(venv) root@debian-8gb-hel1-llmgenerator:/opt/llmready/backend#
