@@ -1,52 +1,135 @@
-Oct 16 12:00:58 debian-8gb-hel1-llmgenerator uvicorn[197879]: INFO:     Waiting for application startup.
-Oct 16 12:00:58 debian-8gb-hel1-llmgenerator uvicorn[197879]: {"timestamp": null, "level": "INFO", "name": "app.main", "message": "Starting LLMReady", "environment": "production", "service": "LLMReady", "module": "main", "function": "startup_event", "line": 84}
-Oct 16 12:00:58 debian-8gb-hel1-llmgenerator uvicorn[197879]: {"timestamp": null, "level": "INFO", "name": "app.main", "message": "Debug mode: False", "environment": "production", "service": "LLMReady", "module": "main", "function": "startup_event", "line": 85}
-Oct 16 12:00:58 debian-8gb-hel1-llmgenerator uvicorn[197879]: {"timestamp": null, "level": "INFO", "name": "app.main", "message": "Database: localhost:5432/llmready_prod", "environment": "production", "service": "LLMReady", "module": "main", "function": "startup_event", "line": 86}
-Oct 16 12:00:58 debian-8gb-hel1-llmgenerator uvicorn[197879]: INFO:     Application startup complete.
-Oct 16 12:00:58 debian-8gb-hel1-llmgenerator uvicorn[197879]: INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
-Oct 16 12:03:24 debian-8gb-hel1-llmgenerator uvicorn[197879]: {"timestamp": null, "level": "WARNING", "name": "passlib.handlers.bcrypt", "message": "(trapped) error reading bcrypt version", "exc_info": "Traceback (most recent call last):\n  File \"/opt/llmready/venv/lib/python3.11/site-packages/passlib/handlers/bcrypt.py\", line 620, in _load_backend_mixin\n    version = _bcrypt.__about__.__version__\n              ^^^^^^^^^^^^^^^^^\nAttributeError: module 'bcrypt' has no attribute '__about__'", "environment": "production", "service": "LLMReady", "module": "bcrypt", "function": "_load_backend_mixin", "line": 622}
-Oct 16 12:03:25 debian-8gb-hel1-llmgenerator uvicorn[197879]: {"timestamp": null, "level": "INFO", "name": "app.services.email", "message": "Email sent successfully to eric29@yopmail.com", "environment": "production", "service": "LLMReady", "module": "email", "function": "send_email", "line": 76}
-Oct 16 12:04:01 debian-8gb-hel1-llmgenerator uvicorn[197879]: {"timestamp": null, "level": "INFO", "name": "app.services.email", "message": "Email sent successfully to test1@test.com", "environment": "production", "service": "LLMReady", "module": "email", "function": "send_email", "line": 76}
-Oct 16 12:09:33 debian-8gb-hel1-llmgenerator uvicorn[197879]: {"timestamp": null, "level": "INFO", "name": "app.services.email", "message": "Email sent successfully to eric29@yopmail.com", "environment": "production", "service": "LLMReady", "module": "email", "function": "send_email", "line": 76
+(venv) root@debian-8gb-hel1-llmgenerator:/opt/llmready# # Run generation test
+python3 scripts/test_generation_workflow.py
 
-(venv) root@debian-8gb-hel1-llmgenerator:/opt/llmready# docker exec -it $(docker ps -qf "name=redis") redis-cli
-127.0.0.1:6379> KEYS *
- 1) "_kombu.binding.scheduled"
- 2) "_kombu.binding.celeryev"
- 3) "generation"
- 4) "backup4"
- 5) "backup3"
- 6) "backup2"
- 7) "_kombu.binding.celery.pidbox"
- 8) "scheduled"
- 9) "_kombu.binding.celery"
-10) "_kombu.binding.generation"
-11) "backup1"
-127.0.0.1:6379> LLEN celery
-(integer) 0
-127.0.0.1:6379> LRANGE celery 0 -1
-(empty array)
-127.0.0.1:6379>
-(venv) root@debian-8gb-hel1-llmgenerator:/opt/llmready# grep REDIS_URL /opt/llmready/backend/.env
-REDIS_URL=redis://localhost:6379/0
-(venv) root@debian-8gb-hel1-llmgenerator:/opt/llmready# sudo systemctl cat llmready-celery-worker | grep REDIS
-(venv) root@debian-8gb-hel1-llmgenerator:/opt/llmready# cd backend/
-(venv) root@debian-8gb-hel1-llmgenerator:/opt/llmready/backend# python -c "
-from app.core.celery_app import celery_app
-print('Registered tasks:')
-for task in sorted(celery_app.tasks.keys()):
-    if 'app.' in task:
-        print(f'  - {task}')
-"
-Registered tasks:
-(venv) root@debian-8gb-hel1-llmgenerator:/opt/llmready/backend#
+============================================================
+🧪 LLMReady Generation Workflow Test (Production)
+============================================================
 
-Exception("Crawler failed: Exception during crawl: [Errno 2] No such file or directory: 'npx'")
-Oct 16 13:27:28 debian-8gb-hel1-llmgenerator celery-worker[217363]: [2025-10-16 13:27:28,636: ERROR/ForkPoolWorker-2] Generation 5a13db12-12be-43b3-8753-23c28817c6f4 failed: Crawler failed: Exception during crawl: [Errno 2] No such file or directory: 'npx'
-Oct 16 13:27:28 debian-8gb-hel1-llmgenerator celery-worker[217363]:     raise Exception(f"Crawler failed: {error_msg}")
-Oct 16 13:27:28 debian-8gb-hel1-llmgenerator celery-worker[217363]: Exception: Crawler failed: Exception during crawl: [Errno 2] No such file or directory: 'npx'
-Oct 16 13:27:28 debian-8gb-hel1-llmgenerator celery-worker[217363]: [2025-10-16 13:27:28,900: INFO/ForkPoolWorker-2] Task app.tasks.generation.generate_llm_content[7cd64857-3f8c-484e-a18b-c189c06296af] succeeded in 0.27570857600221643s: None
-Oct 16 13:27:59 debian-8gb-hel1-llmgenerator celery-worker[217363]: [2025-10-16 13:27:59,672: ERROR/ForkPoolWorker-2] Generation 18c9931b-6848-4081-8b6b-897878ee0fe5 failed: Crawler failed: Exception during crawl: [Errno 2] No such file or directory: 'npx'
-Oct 16 13:27:59 debian-8gb-hel1-llmgenerator celery-worker[217363]:     raise Exception(f"Crawler failed: {error_msg}")
-Oct 16 13:27:59 debian-8gb-hel1-llmgenerator celery-worker[217363]: Exception: Crawler failed: Exception during crawl: [Errno 2] No such file or directory: 'npx'
-Oct 16 13:28:00 debian-8gb-hel1-llmgenerator celery-worker[217363]: [2025-10-16 13:28:00,111: INFO/ForkPoolWorker-2] Task app.tasks.generation.generate_llm_content[74d6f23a-2351-4c96-bef4-62364f5cbcab] succeeded in 0.45086411599913845s: None
+INFO: Testing Docker availability...
+SUCCESS: Docker installed: Docker version 28.5.1, build e180ab8
+SUCCESS: mdream Docker image found
+INFO: Testing npx availability...
+WARNING: npx not installed
+INFO:
+=== Testing Database Connectivity ===
+INFO: Total users in database: 0
+INFO: Total websites in database: 0
+INFO: Total generations in database: 0
+INFO:
+=== Testing Celery/Redis Connectivity ===
+SUCCESS: Registered Celery tasks: 4
+INFO:   - app.tasks.scheduled.sync_stripe_subscriptions
+INFO:   - app.tasks.scheduled.cleanup_old_generations
+INFO:   - app.tasks.generation.generate_llm_content
+INFO:   - app.tasks.scheduled.reset_monthly_quotas
+ERROR: Celery/Redis error: [Errno 2] No such file or directory: 'redis-cli'
+INFO:
+=== Testing Crawler with Simple Website ===
+INFO: Created temp directory: /tmp/llmready_test_bwnclt2u
+INFO: Testing crawler with: https://example.com
+SUCCESS: Crawler succeeded in 5.99s
+INFO: Generated 3 files
+SUCCESS: llms.txt exists (57 bytes)
+INFO: Content preview:
+# Example Domain
+
+## Pages
+
+- [Example Domain](index.md)
+...
+INFO: Testing ZIP creation: /tmp/llmready_test_bwnclt2u.zip
+SUCCESS: ZIP created successfully (696 bytes)
+INFO: Cleaned up temp directory
+
+============================================================
+📊 TEST SUMMARY
+============================================================
+DOCKER: ✅ PASS
+NPX: ❌ FAIL
+DATABASE: ✅ PASS
+CELERY: ❌ FAIL
+CRAWLER: ✅ PASS
+
+⚠️  Some tests failed. Review errors above.
+
+💡 Recommendations:
+  3. Restart Celery worker: sudo systemctl restart llmready-celery-worker
+============================================================
+
+(venv) root@debian-8gb-hel1-llmgenerator:/opt/llmready#
+
+
+
+
+(venv) root@debian-8gb-hel1-llmgenerator:/opt/llmready# # Run Stripe test
+python3 scripts/test_stripe_subscription.py
+
+============================================================
+💳 LLMReady Stripe Subscription Test (Production)
+============================================================
+
+INFO:
+=== Testing Stripe Connection ===
+Traceback (most recent call last):
+  File "/opt/llmready/scripts/test_stripe_subscription.py", line 41, in test_stripe_connection
+    products = stripe.Product.list(limit=3)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/llmready/venv/lib/python3.11/site-packages/stripe/_product.py", line 307, in list
+    result = cls._static_request(
+             ^^^^^^^^^^^^^^^^^^^^
+  File "/opt/llmready/venv/lib/python3.11/site-packages/stripe/_api_resource.py", line 172, in _static_request
+    return _APIRequestor._global_instance().request(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/llmready/venv/lib/python3.11/site-packages/stripe/_api_requestor.py", line 201, in request
+    resp = requestor._interpret_response(rbody, rcode, rheaders, api_mode)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/llmready/venv/lib/python3.11/site-packages/stripe/_api_requestor.py", line 859, in _interpret_response
+    self.handle_error_response(
+  File "/opt/llmready/venv/lib/python3.11/site-packages/stripe/_api_requestor.py", line 342, in handle_error_response
+    raise err
+stripe._error.AuthenticationError: Invalid API Key provided: sk_test_*********here
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/llmready/scripts/test_stripe_subscription.py", line 332, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/opt/llmready/scripts/test_stripe_subscription.py", line 283, in main
+    "stripe_connection": test_stripe_connection(),
+                         ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/llmready/scripts/test_stripe_subscription.py", line 45, in test_stripe_connection
+    except stripe.error.AuthenticationError as e:
+           ^^^^^^^^^^^^
+AttributeError: module 'stripe' has no attribute 'error'. Did you mean: '_error'?
+
+
+(venv) root@debian-8gb-hel1-llmgenerator:/opt/llmready# sudo ./scripts/install-docker.sh
+==========================================
+Installing Docker for LLMReady
+==========================================
+Updating package index...
+Hit:1 http://deb.debian.org/debian bookworm InRelease
+Hit:2 http://deb.debian.org/debian bookworm-updates InRelease
+Get:3 http://security.debian.org/debian-security bookworm-security InRelease [48.0 kB]
+Hit:4 https://download.docker.com/linux/debian bookworm InRelease
+Hit:5 http://mirror.hetzner.com/debian/packages bookworm InRelease
+Hit:6 http://mirror.hetzner.com/debian/packages bookworm-backports InRelease
+Hit:7 http://mirror.hetzner.com/debian/packages bookworm-updates InRelease
+Hit:8 http://mirror.hetzner.com/debian/security bookworm-security InRelease
+Fetched 48.0 kB in 1s (45.2 kB/s)
+Reading package lists... Done
+Installing prerequisites...
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+ca-certificates is already the newest version (20230311+deb12u1).
+curl is already the newest version (7.88.1-10+deb12u14).
+gnupg is already the newest version (2.2.40-1.1+deb12u1).
+lsb-release is already the newest version (12.0-1).
+0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
+Adding Docker GPG key...
+File '/etc/apt/keyrings/docker.gpg' exists. Overwrite? (y/N) N
+Enter new filename:
+gpg: no valid OpenPGP data found.
+gpg: dearmoring failed: File exists
