@@ -140,11 +140,11 @@ jobs:
       - name: Create deployment package
         run: |
           tar -czf backend.tar.gz \
-            backend/ \
-            docker-compose.yml \
             --exclude=backend/__pycache__ \
             --exclude=backend/.pytest_cache \
-            --exclude=backend/tests
+            --exclude=backend/tests \
+            backend/ \
+            docker-compose.yml
       
       - name: Upload to server
         run: |
