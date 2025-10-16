@@ -69,23 +69,26 @@ fi
 
 # Check current branch
 CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
-echo -e "${GREEN}🌿 Current branch: ${CURRENT_BRANCH}${NC}\n"
+DEPLOY_BRANCH="main"
 
-# Check for uncommitted changes
-if ! git diff-index --quiet HEAD --; then
-    echo -e "${YELLOW}⚠️  Warning: You have uncommitted changes${NC}"
-    echo -e "${YELLOW}Do you want to continue? (y/N)${NC}"
-    read -r response
-    if [[ ! "$response" =~ ^[Yy]$ ]]; then
-        echo -e "${RED}Deployment cancelled${NC}"
-        exit 1
-    fi
+echo -e "${GREEN}🌿 Current branch: ${CURRENT_BRANCH}${NC}"
+echo -e "${BLUE}📋 Will deploy from: ${DEPLOY_BRANCH}${NC}\n"
+
+# Warn if not on main branch
+if [ "$CURRENT_BRANCH" != "$DEPLOY_BRANCH" ]; then
+    echo -e "${YELLOW}⚠️  Warning: You are on '${CURRENT_BRANCH}' but production deploys from '${DEPLOY_BRANCH}'${NC}"
+    echo -e "${YELLOW}Make sure you have merged your changes to ${DEPLOY_BRANCH}!${NC}\n"
 fi
+
+# Check for uncommitted changes on main branch
+git fetch origin main
+MAIN_COMMIT=$(git rev-parse origin/main)
+MAIN_MESSAGE=$(git log -1 --pretty=%B origin/main | head -n 1)
 
 # Confirm deployment
 echo -e "${YELLOW}⚠️  You are about to deploy to PRODUCTION${NC}"
-echo -e "${YELLOW}Branch: ${CURRENT_BRANCH}${NC}"
-echo -e "${YELLOW}Commit: $(git rev-parse --short HEAD) - $(git log -1 --pretty=%B | head -n 1)${NC}\n"
+echo -e "${YELLOW}Branch: ${DEPLOY_BRANCH} (always)${NC}"
+echo -e "${YELLOW}Commit: $(git rev-parse --short origin/main) - ${MAIN_MESSAGE}${NC}\n"
 echo -e "${YELLOW}Type 'deploy' to confirm:${NC}"
 read -r confirmation
 
@@ -96,13 +99,13 @@ fi
 
 echo -e "\n${BLUE}🚀 Triggering deployment workflow...${NC}\n"
 
-# Trigger the workflow using GitHub API
+# Trigger the workflow using GitHub API (always deploys from main)
 RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
     -H "Accept: application/vnd.github+json" \
     -H "Authorization: Bearer ${GITHUB_TOKEN}" \
     -H "X-GitHub-Api-Version: 2022-11-28" \
     "https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/actions/workflows/deploy-production.yml/dispatches" \
-    -d "{\"ref\":\"${CURRENT_BRANCH}\",\"inputs\":{\"confirm\":\"deploy\"}}")
+    -d "{\"ref\":\"${DEPLOY_BRANCH}\",\"inputs\":{\"confirm\":\"deploy\"}}")
 
 HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
 BODY=$(echo "$RESPONSE" | sed '$d')

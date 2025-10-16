@@ -1,0 +1,31 @@
+[Unit]
+Description=LLMReady Celery Beat Scheduler
+After=network.target llmready-backend.service
+Requires=llmready-backend.service
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/opt/llmready/backend
+Environment="PATH=/opt/llmready/venv/bin"
+
+# Load environment variables from backend .env
+EnvironmentFile=/opt/llmready/backend/.env
+
+# Start Celery beat
+ExecStart=/opt/llmready/venv/bin/celery -A app.core.celery_app beat \
+    --loglevel=info \
+    --pidfile=/tmp/celerybeat.pid
+
+# Restart on failure
+Restart=always
+RestartSec=10s
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=celery-beat
+
+[Install]
+WantedBy=multi-user.target
