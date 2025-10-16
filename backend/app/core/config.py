@@ -12,13 +12,15 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
-        case_sensitive=True
+        case_sensitive=True,
+        extra="allow"  # Allow extra fields like ENVIRONMENT for different environments
     )
     
     # Project Info
     PROJECT_NAME: str = "LLMReady"
     API_V1_PREFIX: str = "/api/v1"
     DEBUG: bool = True
+    ENVIRONMENT: str = "development"  # development, test, production
     
     # Database
     DATABASE_URL: str = "postgresql://postgres:postgres@localhost:5432/llmready_dev"

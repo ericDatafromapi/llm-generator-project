@@ -1,115 +1,105 @@
-# Documentation Index
+# 📚 Documentation Index
 
-This directory contains detailed documentation for the LLMReady project.
+Welcome to the LLMReady documentation! All documentation is organized by topic for easy navigation.
 
-## 📚 Table of Contents
+## 🚀 Quick Start
 
-### Getting Started
-- **[Installation Guide](INSTALLATION_GUIDE.md)** - Complete setup instructions
-- **[Quick Start Guide](QUICK_START_GUIDE.md)** - Get up and running quickly
-- **[Quick Reference](QUICK_REFERENCE.md)** - Common commands and operations
+**New to the project?** Start here:
+- [START HERE](START_HERE.md) - Project overview and getting started
+- [Quick Start Guide](QUICK_START_GUIDE.md) - Get running in 5 minutes
+- [Installation Guide](INSTALLATION_GUIDE.md) - Detailed installation instructions
 
-### Core Features
+## 📂 Documentation by Topic
 
-#### Authentication & Users
-- **[Authentication Implementation](AUTHENTICATION_IMPLEMENTATION_SUMMARY.md)** - JWT-based auth system
-- **[Database Access Guide](DATABASE_ACCESS_GUIDE.md)** - Database setup and management
+### 🚢 Deployment & CI/CD
+Location: [`docs/deployment/`](deployment/)
 
-#### Payments & Subscriptions
-- **[Stripe Setup Guide](STRIPE_SETUP_GUIDE.md)** - Initial Stripe configuration
-- **[Stripe Implementation Summary](STRIPE_IMPLEMENTATION_SUMMARY.md)** - Original implementation
-- **[Stripe Improvements (Oct 2025)](../STRIPE_IMPROVEMENTS_IMPLEMENTATION.md)** - Latest updates ⭐
-- **[Stripe Audit Report](STRIPE_AUDIT_REPORT.md)** - Security audit findings
-- **[Stripe Local Testing](STRIPE_LOCAL_TESTING.md)** - Testing webhooks locally
-- **[Stripe Integration Verification](stripe_integration_verification.md)** - Verification checklist
-- **[How to Find Stripe Price IDs](HOW_TO_FIND_STRIPE_PRICE_IDS.md)** - Price ID setup
+- **[Deployment Quick Start](deployment/DEPLOYMENT_QUICKSTART.md)** - Deploy in 5 steps
+- **[Complete Deployment Guide](deployment/CI_CD_DEPLOYMENT_GUIDE.md)** - Comprehensive deployment documentation
+- **[Setup Complete Guide](deployment/DEPLOYMENT_SETUP_COMPLETE.md)** - What's been set up and next steps
+- **[SSH Key Setup](deployment/SSH_KEY_CLARIFICATION.md)** - SSH key options explained
+- **[CI/CD Fixes](deployment/CI_CD_FIXES.md)** - Common CI/CD issues and solutions
 
-#### Email
-- **[SendGrid Setup Guide](SENDGRID_SETUP_GUIDE.md)** - Email service configuration
+### 🔐 Authentication & Security
+- [Authentication Implementation](AUTHENTICATION_IMPLEMENTATION_SUMMARY.md) - Auth system overview
+- [SendGrid Setup](SENDGRID_SETUP_GUIDE.md) - Email configuration
 
-#### Content Generation
-- **[Week 6 Generation Complete](WEEK_6_GENERATION_COMPLETE.md)** - Generation feature implementation
-- **[Week 6 Quick Start](WEEK_6_QUICK_START.md)** - Generation quick start
+### 💳 Payments & Subscriptions
+- [Stripe Implementation](STRIPE_IMPLEMENTATION_SUMMARY.md) - Payment processing overview
+- [Stripe Setup Guide](STRIPE_SETUP_GUIDE.md) - Step-by-step Stripe configuration
+- [Stripe Local Testing](STRIPE_LOCAL_TESTING.md) - Testing payments locally
+- [How to Find Stripe Price IDs](HOW_TO_FIND_STRIPE_PRICE_IDS.md) - Locating your price IDs
+- [Subscription Management](../SUBSCRIPTION_MANAGEMENT_GUIDE.md) - Managing user subscriptions
 
-### Project Planning
-- **[Final Hybrid Plan](FINAL_HYBRID_PLAN.md)** - Overall project architecture
-- **[Next Steps](NEXT_STEPS.md)** - Roadmap and future features
-- **[What To Do](what_to_do.md)** - Task list
-- **[Start Here](START_HERE.md)** - Original project kickoff
+### 🗄️ Database
+- [Database Access Guide](DATABASE_ACCESS_GUIDE.md) - Managing the database
+- [Stripe Fixes Verified](STRIPE_FIXES_VERIFIED.md) - Database-related Stripe fixes
 
-### Implementation Summaries
-- **[Week 1 Summary](WEEK_1_SUMMARY.md)** - Initial setup
-- **[Week 4-5 Stripe Complete](WEEK_4_5_STRIPE_COMPLETE.md)** - Stripe integration phase
+### 🏗️ Architecture & Planning
+- [Final Hybrid Plan](FINAL_HYBRID_PLAN.md) - Overall architecture
+- [Stripe Audit Report](STRIPE_AUDIT_REPORT.md) - Stripe integration review
+- [Stripe Improvements](STRIPE_IMPROVEMENTS_IMPLEMENTATION.md) - Enhancement details
 
-## 🔥 Most Important Documents
+### 📝 Weekly Progress Reports
+- [Week 1 Summary](WEEK_1_SUMMARY.md) - Foundation
+- [Week 4-5: Stripe Complete](WEEK_4_5_STRIPE_COMPLETE.md) - Payment integration
+- [Week 6: Generation Complete](WEEK_6_GENERATION_COMPLETE.md) - Generation features
+- [Week 6 Quick Start](WEEK_6_QUICK_START.md) - Week 6 setup
+- [Week 7: Websites Complete](WEEK_7_WEBSITES_COMPLETE.md) - Website features
+- [Week 7 Quick Start](WEEK_7_QUICK_START.md) - Week 7 setup
 
-If you're new to the project, start with these:
+### 📖 Reference
+- [Quick Reference](QUICK_REFERENCE.md) - Common commands and tips
+- [Next Steps](NEXT_STEPS.md) - What to do next
 
-1. **[../README.md](../README.md)** - Project overview (in root directory)
-2. **[Installation Guide](INSTALLATION_GUIDE.md)** - Setup instructions
-3. **[Stripe Improvements Implementation](../STRIPE_IMPROVEMENTS_IMPLEMENTATION.md)** - Latest Stripe updates (Oct 2025)
+## 🎯 Common Tasks
 
-## 📝 Quick Links
-
-### For Development
-- [Quick Reference](QUICK_REFERENCE.md) - Commands you'll use daily
-- [Database Access Guide](DATABASE_ACCESS_GUIDE.md) - Database operations
-- [Stripe Local Testing](STRIPE_LOCAL_TESTING.md) - Test webhooks
-
-### For Deployment
-- [Installation Guide](INSTALLATION_GUIDE.md) - Full setup
-- [Stripe Setup Guide](STRIPE_SETUP_GUIDE.md) - Production Stripe config
-- [SendGrid Setup Guide](SENDGRID_SETUP_GUIDE.md) - Email service
-
-### For Understanding
-- [Authentication Implementation](AUTHENTICATION_IMPLEMENTATION_SUMMARY.md) - How auth works
-- [Stripe Implementation Summary](STRIPE_IMPLEMENTATION_SUMMARY.md) - How payments work
-- [Week 6 Generation Complete](WEEK_6_GENERATION_COMPLETE.md) - How generation works
-
-## 🆕 Recent Updates
-
-**October 2025**: Major Stripe integration improvements
-- See [STRIPE_IMPROVEMENTS_IMPLEMENTATION.md](../STRIPE_IMPROVEMENTS_IMPLEMENTATION.md) in root directory
-- All P0 critical security issues resolved
-- Production-ready webhook handling
-- Comprehensive email notifications
-
-## 📊 Documentation Organization
-
-```
-docs/
-├── README.md                              # This file
-├── INSTALLATION_GUIDE.md                  # Setup
-├── QUICK_START_GUIDE.md                   # Quick start
-├── QUICK_REFERENCE.md                     # Daily commands
-├── AUTHENTICATION_IMPLEMENTATION_SUMMARY.md
-├── DATABASE_ACCESS_GUIDE.md
-├── STRIPE_SETUP_GUIDE.md
-├── STRIPE_IMPLEMENTATION_SUMMARY.md
-├── STRIPE_AUDIT_REPORT.md
-├── STRIPE_LOCAL_TESTING.md
-├── stripe_integration_verification.md
-├── HOW_TO_FIND_STRIPE_PRICE_IDS.md
-├── SENDGRID_SETUP_GUIDE.md
-├── WEEK_6_GENERATION_COMPLETE.md
-├── WEEK_6_QUICK_START.md
-├── FINAL_HYBRID_PLAN.md
-├── NEXT_STEPS.md
-├── what_to_do.md
-├── START_HERE.md
-├── WEEK_1_SUMMARY.md
-└── WEEK_4_5_STRIPE_COMPLETE.md
+### Development
+```bash
+# Start local development
+docker-compose up -d
+cd backend && uvicorn app.main:app --reload
+cd frontend && npm run dev
 ```
 
-## 🔗 External Resources
+### Deployment
+```bash
+# Deploy to production
+./scripts/deploy.sh
+```
 
-- [FastAPI Documentation](https://fastapi.tiangolo.com/)
-- [Stripe API Documentation](https://stripe.com/docs/api)
-- [Celery Documentation](https://docs.celeryproject.org/)
-- [SendGrid API](https://docs.sendgrid.com/)
-- [Streamlit Documentation](https://docs.streamlit.io/)
+### Database
+```bash
+# Run migrations
+cd backend && alembic upgrade head
+
+# Create new migration
+alembic revision --autogenerate -m "description"
+```
+
+### Testing
+```bash
+# Backend tests
+cd backend && python run_tests.py
+
+# Frontend build
+cd frontend && npm run build
+```
+
+## 🆘 Troubleshooting
+
+Having issues? Check these guides:
+- [CI/CD Fixes](deployment/CI_CD_FIXES.md) - Common CI/CD problems
+- [Deployment Troubleshooting](deployment/CI_CD_DEPLOYMENT_GUIDE.md#troubleshooting) - Deployment issues
+- [Stripe Integration Verification](stripe_integration_verification.md) - Payment problems
+
+## 📞 Need Help?
+
+1. Check the relevant documentation section above
+2. Search for your issue in the [CI/CD Fixes](deployment/CI_CD_FIXES.md)
+3. Review the [Troubleshooting Guide](deployment/CI_CD_DEPLOYMENT_GUIDE.md#troubleshooting)
+4. Create an issue on GitHub
 
 ---
 
-**Note**: The most up-to-date implementation guide for Stripe is in the root directory:
-[STRIPE_IMPROVEMENTS_IMPLEMENTATION.md](../STRIPE_IMPROVEMENTS_IMPLEMENTATION.md)
+**Tip**: Use `Cmd+F` (Mac) or `Ctrl+F` (Windows) to search this page for specific topics!

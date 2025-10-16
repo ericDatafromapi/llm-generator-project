@@ -179,22 +179,22 @@ jobs:
             
             # Pull latest Docker images
             echo "Pulling Docker images..."
-            docker-compose pull
+            docker compose pull
             
             # Run database migrations
             echo "Running migrations..."
-            docker-compose run --rm -e DATABASE_URL="${DATABASE_URL}" backend alembic upgrade head
+            docker compose run --rm -e DATABASE_URL="${DATABASE_URL}" backend alembic upgrade head
             
             # Restart services with zero downtime
             echo "Restarting services..."
-            docker-compose up -d --build --force-recreate
+            docker compose up -d --build --force-recreate
             
             # Wait for health check
             echo "Waiting for services to be healthy..."
             sleep 10
             
             # Check if services are running
-            docker-compose ps
+            docker compose ps
             
             echo "✅ Backend deployment complete!"
           EOF
@@ -202,7 +202,8 @@ jobs:
       - name: Verify deployment
         run: |
           sleep 5
-          curl -f https://${{ secrets.PRODUCTION_DOMAIN }}/health || exit 1
+          # Try HTTPS first, fallback to HTTP (for IP addresses without SSL)
+          curl -f https://${{ secrets.PRODUCTION_DOMAIN }}/health || curl -f http://${{ secrets.PRODUCTION_DOMAIN }}/health || exit 1
 
   deploy-frontend:
     name: Deploy Frontend
@@ -275,7 +276,8 @@ jobs:
       - name: Verify frontend deployment
         run: |
           sleep 5
-          curl -f https://${{ secrets.PRODUCTION_DOMAIN }} || exit 1
+          # Try HTTPS first, fallback to HTTP (for IP addresses without SSL)
+          curl -f https://${{ secrets.PRODUCTION_DOMAIN }} || curl -f http://${{ secrets.PRODUCTION_DOMAIN }} || exit 1
 
   notify-deployment:
     name: Send Deployment Notification
