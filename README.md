@@ -1,182 +1,143 @@
-# LLMReady - AI-Optimized Content Generator
+# 🌐 LLMReady - AI-Powered Website Intelligence Platform
 
-A SaaS platform for generating LLM-optimized content from websites, with full Stripe subscription management.
-
-## 🚀 Quick Start
-
-1. **Setup Backend**:
-   ```bash
-   cd backend
-   pip install -r requirements.txt
-   alembic upgrade head
-   ```
-
-2. **Configure Environment** (`.env`):
-   ```env
-   DATABASE_URL=postgresql://user:pass@localhost/dbname
-   REDIS_URL=redis://localhost:6379/0
-   STRIPE_SECRET_KEY=sk_test_...
-   STRIPE_WEBHOOK_SECRET=whsec_...
-   SENDGRID_API_KEY=SG...
-   ```
-
-3. **Run Services**:
-   ```bash
-   # Terminal 1: API
-   uvicorn app.main:app --reload
-   
-   # Terminal 2: Celery Worker
-   celery -A app.core.celery_app worker --loglevel=info
-   
-   # Terminal 3: Celery Beat
-   celery -A app.core.celery_app beat --loglevel=info
-   ```
-
-4. **Frontend**:
-   ```bash
-   cd frontend
-   streamlit run app.py
-   ```
+A full-stack SaaS application that provides AI-powered insights and recommendations for websites.
 
 ## 📚 Documentation
 
-### Essential Guides
-- **[Stripe Improvements Implementation](STRIPE_IMPROVEMENTS_IMPLEMENTATION.md)** - Latest Stripe integration updates (Oct 2025)
-- **[Installation Guide](docs/INSTALLATION_GUIDE.md)** - Complete setup instructions
-- **[Quick Reference](docs/QUICK_REFERENCE.md)** - Common tasks and commands
+**[📖 View Complete Documentation →](docs/README.md)**
 
-### Detailed Documentation (in `/docs`)
-- **Authentication**: [`AUTHENTICATION_IMPLEMENTATION_SUMMARY.md`](docs/AUTHENTICATION_IMPLEMENTATION_SUMMARY.md)
-- **Database**: [`DATABASE_ACCESS_GUIDE.md`](docs/DATABASE_ACCESS_GUIDE.md)
-- **Stripe Setup**: [`STRIPE_SETUP_GUIDE.md`](docs/STRIPE_SETUP_GUIDE.md)
-- **SendGrid**: [`SENDGRID_SETUP_GUIDE.md`](docs/SENDGRID_SETUP_GUIDE.md)
-- **Testing**: [`STRIPE_LOCAL_TESTING.md`](docs/STRIPE_LOCAL_TESTING.md)
+All documentation has been organized by topic in the `docs/` folder for easy navigation.
 
-### Implementation Summaries
-- [`WEEK_6_GENERATION_COMPLETE.md`](docs/WEEK_6_GENERATION_COMPLETE.md) - Generation feature
-- [`WEEK_4_5_STRIPE_COMPLETE.md`](docs/WEEK_4_5_STRIPE_COMPLETE.md) - Stripe integration
-- [`STRIPE_AUDIT_REPORT.md`](docs/STRIPE_AUDIT_REPORT.md) - Security audit
+---
 
-## 🏗️ Project Structure
+## 🚀 Quick Start
 
+### Local Development
+```bash
+# 1. Start services
+docker-compose up -d
+
+# 2. Set up backend
+cd backend
+cp .env.example .env
+# Edit .env with your credentials
+pip install -r requirements.txt
+alembic upgrade head
+uvicorn app.main:app --reload
+
+# 3. Set up frontend
+cd frontend
+cp .env.example .env
+npm install
+npm run dev
 ```
-.
-├── backend/
-│   ├── app/
-│   │   ├── api/v1/          # API endpoints
-│   │   ├── models/          # Database models
-│   │   ├── services/        # Business logic
-│   │   ├── tasks/           # Celery tasks
-│   │   └── core/            # Configuration
-│   ├── alembic/             # Database migrations
-│   └── requirements.txt
-├── frontend/
-│   └── app.py               # Streamlit app
-└── docs/                    # Documentation
+
+Visit: http://localhost:5173
+
+### Deploy to Production
+```bash
+# One command deployment!
+./scripts/deploy.sh
 ```
+
+Or use VSCode: `Cmd+Shift+P` → **Tasks: Run Task** → **🚀 Deploy to Production**
+
+---
+
+## 📖 Key Documentation
+
+### Getting Started
+- [Quick Start Guide](docs/QUICK_START_GUIDE.md) - 5-minute setup
+- [Installation Guide](docs/INSTALLATION_GUIDE.md) - Detailed installation
+- [Start Here](docs/START_HERE.md) - Project overview
+
+### Deployment
+- [🚀 Deploy in 5 Steps](docs/deployment/DEPLOYMENT_QUICKSTART.md)
+- [Complete Deployment Guide](docs/deployment/CI_CD_DEPLOYMENT_GUIDE.md)
+- [CI/CD Fixes](docs/deployment/CI_CD_FIXES.md)
+- [SSH Key Setup](docs/deployment/SSH_KEY_CLARIFICATION.md)
+
+### Development
+- [Authentication](docs/AUTHENTICATION_IMPLEMENTATION_SUMMARY.md)
+- [Database Guide](docs/DATABASE_ACCESS_GUIDE.md)
+- [Stripe Integration](docs/STRIPE_IMPLEMENTATION_SUMMARY.md)
+- [SendGrid Setup](docs/SENDGRID_SETUP_GUIDE.md)
+
+---
+
+## 🛠️ Tech Stack
+
+**Backend:** FastAPI, PostgreSQL, Redis, Celery, Stripe, SendGrid  
+**Frontend:** React, TypeScript, Tailwind CSS, shadcn/ui  
+**DevOps:** Docker, GitHub Actions, Nginx
+
+---
 
 ## ✨ Features
 
-- **Authentication**: JWT-based with email verification
-- **Subscriptions**: Stripe integration with 3 tiers (Free, Standard, Pro)
-- **Content Generation**: Web scraping + LLM optimization
-- **Webhooks**: Full Stripe webhook coverage (11 event types)
-- **Email Notifications**: SendGrid integration
-- **Background Tasks**: Celery for async processing
+### For Users
+- 🌐 Website analysis and insights
+- 🤖 AI-powered recommendations
+- 📊 Performance tracking
+- 💳 Flexible subscription plans
+- 📧 Email notifications
 
-## 🔧 Tech Stack
+### For Developers
+- ✅ Automated PR testing
+- 🚀 One-command deployment
+- 🔄 Zero-downtime deployments
+- 📧 Email notifications for CI/CD
+- 🐳 Docker containerization
+- 🔒 Production-ready SSL setup
 
-- **Backend**: FastAPI, PostgreSQL, Redis, Celery
-- **Frontend**: Streamlit
-- **Payments**: Stripe
-- **Email**: SendGrid
-- **Scraping**: Playwright, BeautifulSoup
+---
 
-## 🎯 Recent Updates (October 2025)
+## 📋 VSCode Tasks
 
-### Stripe Integration Improvements
-All P0 critical issues resolved:
-- ✅ Persistent webhook idempotency
-- ✅ Proper error handling (returns 200)
-- ✅ Payment success handler
-- ✅ Chargeback/refund handling
-- ✅ Rate limiting on checkout
-- ✅ Grace period for failed payments
-- ✅ Email notifications (6 types)
-- ✅ Backup sync task
+Press `Cmd+Shift+P` → **Tasks: Run Task**:
 
-See [STRIPE_IMPROVEMENTS_IMPLEMENTATION.md](STRIPE_IMPROVEMENTS_IMPLEMENTATION.md) for full details.
+- 🚀 **Deploy to Production** - One-click deployment
+- 🧪 **Run Backend Tests** - Execute test suite
+- 🎨 **Build Frontend** - Production build
+- 🐳 **Start/Stop Docker Services** - Manage containers
+- 📊 **View Docker Logs** - Monitor logs
 
-## 📊 Database Migrations
+---
+
+## 🎯 Common Commands
 
 ```bash
-# Create new migration
+# Development
+docker-compose up -d              # Start services
+cd backend && uvicorn app.main:app --reload
+cd frontend && npm run dev
+
+# Testing
+cd backend && python run_tests.py
+cd frontend && npm run build
+
+# Database
+cd backend && alembic upgrade head
 alembic revision --autogenerate -m "description"
 
-# Apply migrations
-alembic upgrade head
-
-# Rollback one migration
-alembic downgrade -1
+# Deployment
+./scripts/deploy.sh              # Deploy to production
 ```
 
-## 🧪 Testing
+---
 
-```bash
-# Test Stripe webhook
-curl -X POST http://localhost:8000/api/v1/webhooks/stripe \
-  -H "Content-Type: application/json" \
-  -H "stripe-signature: test" \
-  -d @test_webhook.json
-```
+## 🆘 Need Help?
 
-## 📝 Environment Variables
+1. Check the [Documentation Index](docs/README.md)
+2. Review [CI/CD Fixes](docs/deployment/CI_CD_FIXES.md)
+3. See [Troubleshooting Guide](docs/deployment/CI_CD_DEPLOYMENT_GUIDE.md#troubleshooting)
 
-Key variables needed in `.env`:
-
-```env
-# Database
-DATABASE_URL=postgresql://...
-
-# Redis
-REDIS_URL=redis://localhost:6379/0
-
-# Stripe
-STRIPE_SECRET_KEY=sk_...
-STRIPE_WEBHOOK_SECRET=whsec_...
-STRIPE_PRICE_STANDARD=price_...
-STRIPE_PRICE_PRO=price_...
-
-# SendGrid
-SENDGRID_API_KEY=SG...
-FROM_EMAIL=noreply@yourdomain.com
-
-# App
-FRONTEND_URL=http://localhost:8501
-SECRET_KEY=your-secret-key
-```
-
-## 🆘 Troubleshooting
-
-### Webhook issues
-- Check `stripe_events` table for errors
-- Verify `STRIPE_WEBHOOK_SECRET` is correct
-- Test with Stripe CLI: `stripe listen --forward-to localhost:8000/api/v1/webhooks/stripe`
-
-### Database connection
-- Verify PostgreSQL is running
-- Check DATABASE_URL format
-- Run migrations: `alembic upgrade head`
-
-### Email not sending
-- Verify SendGrid API key
-- Check SendGrid dashboard for errors
-- Test with: `python backend/test_sendgrid.py`
+---
 
 ## 📄 License
 
-Proprietary - All rights reserved
+[Your License Here]
 
-## 👥 Support
+---
 
-For issues or questions, check the documentation in `/docs` or review implementation summaries.
+Made with ❤️ by [Your Name]

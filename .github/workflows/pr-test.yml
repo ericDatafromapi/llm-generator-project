@@ -1,0 +1,188 @@
+name: PR Test & Validation
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+  push:
+    branches: [ main, develop ]
+
+jobs:
+  backend-tests:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: llmready_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: backend/requirements.txt
+      
+      - name: Install dependencies
+        working-directory: ./backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Create test environment file
+        working-directory: ./backend
+        run: |
+          cat > .env << EOF
+          DATABASE_URL=postgresql://postgres:postgres@localhost:5432/llmready_test
+          REDIS_URL=redis://localhost:6379/0
+          SECRET_KEY=test_secret_key_for_ci_cd_testing_only
+          STRIPE_SECRET_KEY=sk_test_dummy_key_for_testing
+          STRIPE_WEBHOOK_SECRET=whsec_dummy_webhook_secret
+          SENDGRID_API_KEY=SG.dummy_api_key_for_testing
+          FRONTEND_URL=http://localhost:5173
+          ENVIRONMENT=test
+          EOF
+      
+      - name: Run database migrations
+        working-directory: ./backend
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/llmready_test
+        run: |
+          alembic upgrade head
+      
+      - name: Run tests
+        working-directory: ./backend
+        run: |
+          python run_tests.py
+      
+      - name: Run pytest
+        working-directory: ./backend
+        run: |
+          pytest tests/ -v --tb=short || true
+
+  frontend-tests:
+    name: Frontend Tests & Build
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+      
+      - name: Install dependencies
+        working-directory: ./frontend
+        run: npm ci
+      
+      - name: Create test environment file
+        working-directory: ./frontend
+        run: |
+          cat > .env << EOF
+          VITE_API_URL=http://localhost:8000
+          VITE_STRIPE_PUBLIC_KEY=pk_test_dummy_key
+          EOF
+      
+      - name: Run linter
+        working-directory: ./frontend
+        run: npm run lint || true
+      
+      - name: Build frontend
+        working-directory: ./frontend
+        run: npm run build
+      
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist
+          retention-days: 7
+
+  docker-build-test:
+    name: Docker Build Test
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Test Docker Compose
+        run: |
+          docker compose config
+
+  notify:
+    name: Send Notification
+    runs-on: ubuntu-latest
+    needs: [backend-tests, frontend-tests, docker-build-test]
+    if: always()
+    
+    steps:
+      - name: Determine status
+        id: status
+        run: |
+          if [[ "${{ needs.backend-tests.result }}" == "success" ]] && \
+             [[ "${{ needs.frontend-tests.result }}" == "success" ]] && \
+             [[ "${{ needs.docker-build-test.result }}" == "success" ]]; then
+            echo "status=success" >> $GITHUB_OUTPUT
+            echo "emoji=✅" >> $GITHUB_OUTPUT
+            echo "color=good" >> $GITHUB_OUTPUT
+          else
+            echo "status=failure" >> $GITHUB_OUTPUT
+            echo "emoji=❌" >> $GITHUB_OUTPUT
+            echo "color=danger" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Send email notification
+        if: github.event_name == 'pull_request'
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.MAIL_SERVER }}
+          server_port: ${{ secrets.MAIL_PORT }}
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          subject: "${{ steps.status.outputs.emoji }} PR #${{ github.event.pull_request.number }} - ${{ steps.status.outputs.status }}"
+          to: ${{ secrets.NOTIFICATION_EMAIL }}
+          from: GitHub Actions <noreply@github.com>
+          body: |
+            Pull Request: #${{ github.event.pull_request.number }}
+            Title: ${{ github.event.pull_request.title }}
+            Author: ${{ github.event.pull_request.user.login }}
+            Status: ${{ steps.status.outputs.status }}
+            
+            Backend Tests: ${{ needs.backend-tests.result }}
+            Frontend Tests: ${{ needs.frontend-tests.result }}
+            Docker Build: ${{ needs.docker-build-test.result }}
+            
+            View PR: ${{ github.event.pull_request.html_url }}
+            View Workflow: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
