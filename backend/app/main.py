@@ -2,22 +2,22 @@
 FastAPI main application.
 Entry point for the LLMReady backend API.
 """
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from slowapi.errors import RateLimitExceeded
 import logging
+import sentry_sdk
 
 from app.core.config import settings
 from app.core.database import engine, Base
 from app.core.rate_limit import limiter, rate_limit_exceeded_handler
+from app.core.logging_config import configure_monitoring
 from app.api.v1 import auth, password_reset, email_verification, subscriptions, webhooks, generations, websites, contact, refunds
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
+# Initialize monitoring and logging BEFORE creating the app
+configure_monitoring()
+
 logger = logging.getLogger(__name__)
 
 # Create FastAPI app
@@ -44,6 +44,38 @@ app.state.limiter = limiter
 
 # Add rate limit exceeded exception handler
 app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
+
+
+# Global exception handler for Sentry
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    """
+    Global exception handler that captures all unhandled exceptions
+    and sends them to Sentry before returning an error response.
+    """
+    # Capture exception in Sentry
+    if settings.SENTRY_DSN:
+        sentry_sdk.capture_exception(exc)
+    
+    # Log the error
+    logger.error(
+        f"Unhandled exception: {exc}",
+        exc_info=True,
+        extra={
+            "path": request.url.path,
+            "method": request.method,
+            "client_host": request.client.host if request.client else None,
+        }
+    )
+    
+    # Return appropriate error response
+    return JSONResponse(
+        status_code=500,
+        content={
+            "detail": "Internal server error",
+            "error": str(exc) if settings.DEBUG else "An unexpected error occurred"
+        }
+    )
 
 
 @app.on_event("startup")
@@ -104,6 +136,16 @@ async def health_check():
                 "error": str(e)
             }
         )
+
+@app.get("/test-sentry", tags=["Testing"])
+async def test_sentry():
+    """
+    Test endpoint to verify Sentry error tracking.
+    This endpoint intentionally throws an error to test monitoring.
+    """
+    logger.info("Test Sentry endpoint called - about to throw an error")
+    raise ValueError("🔥 This is a TEST error to verify Sentry is working! If you see this in Sentry, everything is configured correctly.")
+
 
 
 # API v1 routes - Authentication

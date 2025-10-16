@@ -40,3 +40,7 @@ sendgrid==6.11.0
 
 # Stripe (Week 4-5)
 stripe==13.0.1
+
+# Monitoring & Logging
+sentry-sdk[fastapi]==1.40.0
+python-json-logger==2.0.7

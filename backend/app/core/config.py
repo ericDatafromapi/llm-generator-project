@@ -86,6 +86,12 @@ class Settings(BaseSettings):
     
     # Rate Limiting
     RATE_LIMIT_PER_MINUTE: int = 60
+    
+    # Monitoring & Logging
+    SENTRY_DSN: str = ""  # Sentry DSN for error tracking
+    SENTRY_TRACES_SAMPLE_RATE: float = 0.1  # 10% of transactions
+    SENTRY_PROFILES_SAMPLE_RATE: float = 0.1  # 10% of transactions
+    LOG_LEVEL: str = "INFO"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
 
 
 # Global settings instance

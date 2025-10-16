@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { api } from '@/lib/api'
+import { setSentryUser, clearSentryUser } from '@/lib/sentry'
 import type { User, LoginRequest, RegisterRequest, AuthResponse } from '@/types'
 
 interface AuthState {
@@ -37,6 +38,13 @@ export const useAuthStore = create<AuthState>((set) => ({
       localStorage.setItem('access_token', access_token)
       localStorage.setItem('refresh_token', refresh_token)
 
+      // Set user context in Sentry for error tracking
+      setSentryUser({
+        id: user.id,
+        email: user.email,
+        username: user.email.split('@')[0],
+      })
+
       set({ user, isAuthenticated: true, isInitialized: true, isLoading: false })
     } catch (error: any) {
       const message = error.response?.data?.detail || 'Login failed'
@@ -54,6 +62,13 @@ export const useAuthStore = create<AuthState>((set) => ({
       localStorage.setItem('access_token', access_token)
       localStorage.setItem('refresh_token', refresh_token)
 
+      // Set user context in Sentry for error tracking
+      setSentryUser({
+        id: user.id,
+        email: user.email,
+        username: user.email.split('@')[0],
+      })
+
       set({ user, isAuthenticated: true, isInitialized: true, isLoading: false })
     } catch (error: any) {
       const message = error.response?.data?.detail || 'Registration failed'
@@ -65,6 +80,10 @@ export const useAuthStore = create<AuthState>((set) => ({
   logout: () => {
     localStorage.removeItem('access_token')
     localStorage.removeItem('refresh_token')
+    
+    // Clear user context in Sentry on logout
+    clearSentryUser()
+    
     set({ user: null, isAuthenticated: false, isInitialized: true })
   },
 
@@ -77,6 +96,14 @@ export const useAuthStore = create<AuthState>((set) => ({
 
     try {
       const response = await api.get<User>('/api/v1/auth/me')
+      
+      // Set user context in Sentry for error tracking
+      setSentryUser({
+        id: response.data.id,
+        email: response.data.email,
+        username: response.data.email.split('@')[0],
+      })
+      
       set({ user: response.data, isAuthenticated: true, isInitialized: true })
     } catch (error) {
       // Only clear tokens and logout if it's not a network error
@@ -85,6 +112,10 @@ export const useAuthStore = create<AuthState>((set) => ({
         localStorage.removeItem('access_token')
         localStorage.removeItem('refresh_token')
       }
+      
+      // Clear user context in Sentry
+      clearSentryUser()
+      
       set({ user: null, isAuthenticated: false, isInitialized: true })
     }
   },
