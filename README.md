@@ -1,182 +1,307 @@
-# LLMReady - AI-Optimized Content Generator
+# 🌐 LLMReady - AI-Powered Website Intelligence Platform
 
-A SaaS platform for generating LLM-optimized content from websites, with full Stripe subscription management.
-
-## 🚀 Quick Start
-
-1. **Setup Backend**:
-   ```bash
-   cd backend
-   pip install -r requirements.txt
-   alembic upgrade head
-   ```
-
-2. **Configure Environment** (`.env`):
-   ```env
-   DATABASE_URL=postgresql://user:pass@localhost/dbname
-   REDIS_URL=redis://localhost:6379/0
-   STRIPE_SECRET_KEY=sk_test_...
-   STRIPE_WEBHOOK_SECRET=whsec_...
-   SENDGRID_API_KEY=SG...
-   ```
-
-3. **Run Services**:
-   ```bash
-   # Terminal 1: API
-   uvicorn app.main:app --reload
-   
-   # Terminal 2: Celery Worker
-   celery -A app.core.celery_app worker --loglevel=info
-   
-   # Terminal 3: Celery Beat
-   celery -A app.core.celery_app beat --loglevel=info
-   ```
-
-4. **Frontend**:
-   ```bash
-   cd frontend
-   streamlit run app.py
-   ```
+A full-stack SaaS application that provides AI-powered insights and recommendations for websites.
 
 ## 📚 Documentation
 
-### Essential Guides
-- **[Stripe Improvements Implementation](STRIPE_IMPROVEMENTS_IMPLEMENTATION.md)** - Latest Stripe integration updates (Oct 2025)
-- **[Installation Guide](docs/INSTALLATION_GUIDE.md)** - Complete setup instructions
-- **[Quick Reference](docs/QUICK_REFERENCE.md)** - Common tasks and commands
+### Getting Started
+- **[Quick Start Guide](QUICK_START_GUIDE.md)** - Get up and running in 5 minutes
+- **[Installation Guide](INSTALLATION_GUIDE.md)** - Detailed setup instructions
+- **[Start Here](START_HERE.md)** - Project overview and architecture
 
-### Detailed Documentation (in `/docs`)
-- **Authentication**: [`AUTHENTICATION_IMPLEMENTATION_SUMMARY.md`](docs/AUTHENTICATION_IMPLEMENTATION_SUMMARY.md)
-- **Database**: [`DATABASE_ACCESS_GUIDE.md`](docs/DATABASE_ACCESS_GUIDE.md)
-- **Stripe Setup**: [`STRIPE_SETUP_GUIDE.md`](docs/STRIPE_SETUP_GUIDE.md)
-- **SendGrid**: [`SENDGRID_SETUP_GUIDE.md`](docs/SENDGRID_SETUP_GUIDE.md)
-- **Testing**: [`STRIPE_LOCAL_TESTING.md`](docs/STRIPE_LOCAL_TESTING.md)
+### Development
+- **[Authentication Implementation](AUTHENTICATION_IMPLEMENTATION_SUMMARY.md)** - Auth system details
+- **[Database Access Guide](DATABASE_ACCESS_GUIDE.md)** - Database management
+- **[Stripe Integration](STRIPE_IMPLEMENTATION_SUMMARY.md)** - Payment processing
+- **[SendGrid Setup](SENDGRID_SETUP_GUIDE.md)** - Email configuration
 
-### Implementation Summaries
-- [`WEEK_6_GENERATION_COMPLETE.md`](docs/WEEK_6_GENERATION_COMPLETE.md) - Generation feature
-- [`WEEK_4_5_STRIPE_COMPLETE.md`](docs/WEEK_4_5_STRIPE_COMPLETE.md) - Stripe integration
-- [`STRIPE_AUDIT_REPORT.md`](docs/STRIPE_AUDIT_REPORT.md) - Security audit
+### Deployment & CI/CD
+- **[🚀 Deployment Quick Start](DEPLOYMENT_QUICKSTART.md)** - Deploy in 5 steps
+- **[📖 Complete Deployment Guide](CI_CD_DEPLOYMENT_GUIDE.md)** - Comprehensive CI/CD documentation
+- **[🔑 GitHub Secrets Template](.github/SECRETS_TEMPLATE.md)** - Required secrets configuration
 
-## 🏗️ Project Structure
+## 🚀 Quick Deploy
 
+Deploy to production with one command from VSCode:
+
+```bash
+./scripts/deploy.sh
 ```
-.
-├── backend/
-│   ├── app/
-│   │   ├── api/v1/          # API endpoints
-│   │   ├── models/          # Database models
-│   │   ├── services/        # Business logic
-│   │   ├── tasks/           # Celery tasks
-│   │   └── core/            # Configuration
-│   ├── alembic/             # Database migrations
-│   └── requirements.txt
-├── frontend/
-│   └── app.py               # Streamlit app
-└── docs/                    # Documentation
-```
+
+Or use VSCode Command Palette: `Cmd+Shift+P` → **Tasks: Run Task** → **🚀 Deploy to Production**
 
 ## ✨ Features
 
-- **Authentication**: JWT-based with email verification
-- **Subscriptions**: Stripe integration with 3 tiers (Free, Standard, Pro)
-- **Content Generation**: Web scraping + LLM optimization
-- **Webhooks**: Full Stripe webhook coverage (11 event types)
-- **Email Notifications**: SendGrid integration
-- **Background Tasks**: Celery for async processing
+### For Users
+- 🌐 Website analysis and insights
+- 🤖 AI-powered recommendations
+- 📊 Performance tracking
+- 💳 Flexible subscription plans
+- 📧 Email notifications
 
-## 🔧 Tech Stack
+### For Developers
+- ✅ Automated PR testing
+- 🚀 One-command deployment
+- 🔄 Zero-downtime deployments
+- 📧 Email notifications for CI/CD
+- 🐳 Docker containerization
+- 🔒 Production-ready SSL setup
 
-- **Backend**: FastAPI, PostgreSQL, Redis, Celery
-- **Frontend**: Streamlit
+## 🛠️ Tech Stack
+
+### Backend
+- **Framework**: FastAPI (Python)
+- **Database**: PostgreSQL
+- **Cache**: Redis
+- **Task Queue**: Celery
 - **Payments**: Stripe
 - **Email**: SendGrid
-- **Scraping**: Playwright, BeautifulSoup
 
-## 🎯 Recent Updates (October 2025)
+### Frontend
+- **Framework**: React + TypeScript
+- **UI Library**: Tailwind CSS + shadcn/ui
+- **State**: Zustand
+- **Routing**: React Router
+- **HTTP**: Axios
 
-### Stripe Integration Improvements
-All P0 critical issues resolved:
-- ✅ Persistent webhook idempotency
-- ✅ Proper error handling (returns 200)
-- ✅ Payment success handler
-- ✅ Chargeback/refund handling
-- ✅ Rate limiting on checkout
-- ✅ Grace period for failed payments
-- ✅ Email notifications (6 types)
-- ✅ Backup sync task
+### DevOps
+- **CI/CD**: GitHub Actions
+- **Containers**: Docker + Docker Compose
+- **Web Server**: Nginx
+- **SSL**: Let's Encrypt (Certbot)
 
-See [STRIPE_IMPROVEMENTS_IMPLEMENTATION.md](STRIPE_IMPROVEMENTS_IMPLEMENTATION.md) for full details.
+## 📦 Project Structure
 
-## 📊 Database Migrations
-
-```bash
-# Create new migration
-alembic revision --autogenerate -m "description"
-
-# Apply migrations
-alembic upgrade head
-
-# Rollback one migration
-alembic downgrade -1
 ```
+.
+├── backend/                 # FastAPI backend
+│   ├── app/
+│   │   ├── api/            # API routes
+│   │   ├── core/           # Core configuration
+│   │   ├── models/         # Database models
+│   │   ├── schemas/        # Pydantic schemas
+│   │   ├── services/       # Business logic
+│   │   └── tasks/          # Celery tasks
+│   ├── alembic/            # Database migrations
+│   └── tests/              # Backend tests
+├── frontend/               # React frontend
+│   ├── src/
+│   │   ├── components/    # React components
+│   │   ├── pages/         # Page components
+│   │   ├── lib/           # Utilities
+│   │   └── store/         # State management
+├── scripts/               # Deployment scripts
+│   ├── deploy.sh          # Deploy from VSCode
+│   └── server-setup.sh    # Server setup script
+├── .github/               # GitHub configuration
+│   └── workflows/         # CI/CD workflows
+│       ├── pr-test.yml           # PR testing
+│       └── deploy-production.yml  # Production deployment
+└── docs/                  # Additional documentation
+```
+
+## 🏁 Getting Started
+
+### Local Development
+
+1. **Clone the repository**
+```bash
+git clone <your-repo-url>
+cd llmready
+```
+
+2. **Start services**
+```bash
+docker-compose up -d
+```
+
+3. **Set up backend**
+```bash
+cd backend
+cp .env.example .env
+# Edit .env with your credentials
+pip install -r requirements.txt
+alembic upgrade head
+uvicorn app.main:app --reload
+```
+
+4. **Set up frontend**
+```bash
+cd frontend
+cp .env.example .env
+# Edit .env with your API URL
+npm install
+npm run dev
+```
+
+Visit: http://localhost:5173
+
+### Production Deployment
+
+See **[Deployment Quick Start](DEPLOYMENT_QUICKSTART.md)** for step-by-step instructions.
+
+## 🔧 Configuration
+
+### Environment Variables
+
+#### Backend (`.env`)
+```env
+DATABASE_URL=postgresql://...
+REDIS_URL=redis://...
+SECRET_KEY=your-secret-key
+STRIPE_SECRET_KEY=sk_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+SENDGRID_API_KEY=SG...
+FRONTEND_URL=http://localhost:5173
+```
+
+#### Frontend (`.env`)
+```env
+VITE_API_URL=http://localhost:8000
+VITE_STRIPE_PUBLIC_KEY=pk_...
+```
+
+See [`.env.example`](backend/.env.example) files for complete configuration.
 
 ## 🧪 Testing
 
+### Run Backend Tests
 ```bash
-# Test Stripe webhook
-curl -X POST http://localhost:8000/api/v1/webhooks/stripe \
-  -H "Content-Type: application/json" \
-  -H "stripe-signature: test" \
-  -d @test_webhook.json
+cd backend
+python run_tests.py
 ```
 
-## 📝 Environment Variables
+Or use VSCode: `Cmd+Shift+P` → **Tasks: Run Task** → **🧪 Run Backend Tests**
 
-Key variables needed in `.env`:
+### Run Frontend Build
+```bash
+cd frontend
+npm run build
+```
 
-```env
-# Database
-DATABASE_URL=postgresql://...
+Or use VSCode: `Cmd+Shift+P` → **Tasks: Run Task** → **🎨 Build Frontend**
 
-# Redis
-REDIS_URL=redis://localhost:6379/0
+## 📝 Available VSCode Tasks
 
-# Stripe
-STRIPE_SECRET_KEY=sk_...
-STRIPE_WEBHOOK_SECRET=whsec_...
-STRIPE_PRICE_STANDARD=price_...
-STRIPE_PRICE_PRO=price_...
+Press `Cmd+Shift+P` → **Tasks: Run Task** to access:
 
-# SendGrid
-SENDGRID_API_KEY=SG...
-FROM_EMAIL=noreply@yourdomain.com
+- 🚀 **Deploy to Production** - One-click deployment
+- 🧪 **Run Backend Tests** - Execute test suite
+- 🎨 **Build Frontend** - Production build
+- 🐳 **Start Docker Services** - Start all services
+- 🛑 **Stop Docker Services** - Stop all services
+- 📊 **View Docker Logs** - Monitor container logs
 
-# App
-FRONTEND_URL=http://localhost:8501
-SECRET_KEY=your-secret-key
+## 🔄 CI/CD Pipeline
+
+### Automated PR Testing
+Every pull request automatically:
+- ✅ Runs backend tests with PostgreSQL and Redis
+- ✅ Runs frontend linting and build
+- ✅ Validates Docker configuration
+- ✅ Sends email notification with results
+
+### Production Deployment
+Deployments automatically:
+- ✅ Run full test suite
+- ✅ Build production frontend
+- ✅ Deploy backend with zero downtime
+- ✅ Run database migrations
+- ✅ Deploy frontend to nginx
+- ✅ Send email notification with status
+
+## 🔒 Security
+
+- JWT authentication
+- Password hashing with bcrypt
+- Rate limiting on sensitive endpoints
+- CORS configuration
+- SQL injection prevention (SQLAlchemy ORM)
+- Environment-based secrets
+- SSL/HTTPS in production
+
+## 📧 Email Notifications
+
+Configure email settings in GitHub Secrets to receive notifications for:
+- Pull request test results
+- Deployment successes
+- Deployment failures
+- System alerts
+
+## 🗄️ Database Migrations
+
+Create migration:
+```bash
+cd backend
+alembic revision --autogenerate -m "Description"
+```
+
+Apply migrations:
+```bash
+alembic upgrade head
+```
+
+Rollback:
+```bash
+alembic downgrade -1
+```
+
+## 🐳 Docker Commands
+
+```bash
+# Start services
+docker-compose up -d
+
+# Stop services
+docker-compose down
+
+# View logs
+docker-compose logs -f
+
+# Rebuild containers
+docker-compose up -d --build
+
+# Check status
+docker-compose ps
 ```
 
 ## 🆘 Troubleshooting
 
-### Webhook issues
-- Check `stripe_events` table for errors
-- Verify `STRIPE_WEBHOOK_SECRET` is correct
-- Test with Stripe CLI: `stripe listen --forward-to localhost:8000/api/v1/webhooks/stripe`
+See the **[Complete Deployment Guide](CI_CD_DEPLOYMENT_GUIDE.md#troubleshooting)** for detailed troubleshooting steps.
 
-### Database connection
-- Verify PostgreSQL is running
-- Check DATABASE_URL format
-- Run migrations: `alembic upgrade head`
+Common issues:
+- [SSH Connection Failed](CI_CD_DEPLOYMENT_GUIDE.md#1-ssh-connection-failed)
+- [Docker Permission Denied](CI_CD_DEPLOYMENT_GUIDE.md#2-docker-permission-denied)
+- [Database Connection Failed](CI_CD_DEPLOYMENT_GUIDE.md#4-database-connection-failed)
+- [Email Notifications Not Sending](CI_CD_DEPLOYMENT_GUIDE.md#7-email-notifications-not-sending)
 
-### Email not sending
-- Verify SendGrid API key
-- Check SendGrid dashboard for errors
-- Test with: `python backend/test_sendgrid.py`
+## 📚 Additional Resources
+
+- [Stripe Local Testing](STRIPE_LOCAL_TESTING.md)
+- [Subscription Management](SUBSCRIPTION_MANAGEMENT_GUIDE.md)
+- [Week-by-Week Progress](WEEK_1_SUMMARY.md)
+
+## 🤝 Contributing
+
+1. Create a feature branch: `git checkout -b feature/my-feature`
+2. Make your changes
+3. Commit: `git commit -m "Add feature"`
+4. Push: `git push origin feature/my-feature`
+5. Create a Pull Request
+6. Automated tests will run
+7. Merge after review and passing tests
 
 ## 📄 License
 
-Proprietary - All rights reserved
+[Your License Here]
 
-## 👥 Support
+## 🙏 Support
 
-For issues or questions, check the documentation in `/docs` or review implementation summaries.
+For issues and questions:
+- Check the [Deployment Guide](CI_CD_DEPLOYMENT_GUIDE.md)
+- Review [Troubleshooting](CI_CD_DEPLOYMENT_GUIDE.md#troubleshooting)
+- Create an issue on GitHub
+
+---
+
+Made with ❤️ by [Your Name]
