@@ -186,26 +186,48 @@ def test_celery_connectivity():
         for task in tasks:
             log(f"  - {task}", "INFO")
         
-        # Try to ping Redis
-        result = subprocess.run(['redis-cli', 'ping'], capture_output=True, text=True, timeout=5)
-        if 'PONG' in result.stdout:
-            log("Redis is responding", "SUCCESS")
-        else:
-            log("Redis not responding properly", "WARNING")
+        # Tasks being registered is the main success criteria
+        tasks_ok = len(tasks) > 0
         
-        # Check queue lengths
-        result = subprocess.run(['redis-cli', 'LLEN', 'celery'], capture_output=True, text=True, timeout=5)
-        queue_len = int(result.stdout.strip()) if result.stdout.strip().isdigit() else 0
-        log(f"Celery queue length: {queue_len}", "INFO")
+        # Try to ping Redis (optional - just for monitoring info)
+        try:
+            result = subprocess.run(['redis-cli', 'ping'], capture_output=True, text=True, timeout=5)
+            if 'PONG' in result.stdout:
+                log("Redis is responding (via redis-cli)", "SUCCESS")
+                
+                # Check queue lengths
+                result = subprocess.run(['redis-cli', 'LLEN', 'celery'], capture_output=True, text=True, timeout=5)
+                queue_len = int(result.stdout.strip()) if result.stdout.strip().isdigit() else 0
+                log(f"Celery queue length: {queue_len}", "INFO")
+                
+                result = subprocess.run(['redis-cli', 'LLEN', 'generation'], capture_output=True, text=True, timeout=5)
+                gen_queue_len = int(result.stdout.strip()) if result.stdout.strip().isdigit() else 0
+                log(f"Generation queue length: {gen_queue_len}", "INFO")
+            else:
+                log("Redis not responding properly", "WARNING")
+        except FileNotFoundError:
+            log("redis-cli not installed (optional monitoring tool)", "INFO")
+            log("Install with: sudo apt-get install redis-tools", "INFO")
+        except Exception as e:
+            log(f"Could not check Redis queues: {e}", "WARNING")
         
-        result = subprocess.run(['redis-cli', 'LLEN', 'generation'], capture_output=True, text=True, timeout=5)
-        gen_queue_len = int(result.stdout.strip()) if result.stdout.strip().isdigit() else 0
-        log(f"Generation queue length: {gen_queue_len}", "INFO")
+        # Check if Celery worker service is running
+        try:
+            result = subprocess.run(['systemctl', 'is-active', 'llmready-celery-worker'],
+                                  capture_output=True, text=True, timeout=5)
+            if result.returncode == 0 and 'active' in result.stdout:
+                log("Celery worker service is ACTIVE", "SUCCESS")
+            else:
+                log("Celery worker service is NOT running", "ERROR")
+                log("Start with: sudo systemctl start llmready-celery-worker", "WARNING")
+                tasks_ok = False
+        except Exception as e:
+            log(f"Could not check worker service: {e}", "WARNING")
         
-        return len(tasks) > 0
+        return tasks_ok
         
     except Exception as e:
-        log(f"Celery/Redis error: {e}", "ERROR")
+        log(f"Celery connectivity error: {e}", "ERROR")
         return False
 
 def main():
@@ -247,13 +269,19 @@ def main():
         # Provide recommendations
         print("\n💡 Recommendations:")
         if not results["docker"] and not results["npx"]:
-            print("  1. Install Docker: sudo /opt/llmready/scripts/install-docker.sh")
+            print("  1. Install Docker (recommended): sudo /opt/llmready/scripts/install-docker.sh")
             print("     OR")
-            print("  2. Install Node.js: sudo apt-get install -y nodejs npm")
+            print("  2. Install Node.js (fallback): sudo apt-get install -y nodejs npm")
         if not results["celery"]:
-            print("  3. Restart Celery worker: sudo systemctl restart llmready-celery-worker")
+            print("  3. Check/start Celery worker: sudo systemctl start llmready-celery-worker")
+            print("     Then verify: sudo systemctl status llmready-celery-worker")
         if not results["database"]:
             print("  4. Check database connection in /opt/llmready/backend/.env")
+        
+        print("\n📝 Note:")
+        print("  - npx FAIL is OK if Docker works (Docker is preferred)")
+        print("  - redis-cli not found is OK (just a monitoring tool)")
+        print("  - Check if Celery worker SERVICE is running, not just tasks registered")
     
     print("="*60 + "\n")
     
