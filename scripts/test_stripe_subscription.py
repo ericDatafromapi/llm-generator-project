@@ -42,7 +42,7 @@ def test_stripe_connection():
         log(f"Connected to Stripe successfully", "SUCCESS")
         log(f"Found {len(products.data)} products", "INFO")
         return True
-    except stripe.error.AuthenticationError as e:
+    except stripe._error.AuthenticationError as e:
         log(f"Stripe authentication failed: {e}", "ERROR")
         log("Check STRIPE_SECRET_KEY in .env", "WARNING")
         return False
@@ -69,7 +69,7 @@ def test_stripe_prices():
             try:
                 price = stripe.Price.retrieve(price_id)
                 log(f"✅ {name}: {price_id} ({price.currency.upper()} {price.unit_amount/100})", "SUCCESS")
-            except stripe.error.InvalidRequestError:
+            except stripe._error.InvalidRequestError:
                 log(f"❌ {name}: {price_id} (NOT FOUND IN STRIPE)", "ERROR")
                 all_configured = False
         else:
