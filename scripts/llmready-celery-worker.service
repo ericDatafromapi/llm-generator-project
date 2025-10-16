@@ -13,11 +13,12 @@ Environment="PATH=/opt/llmready/venv/bin"
 # Load environment variables from backend .env
 EnvironmentFile=/opt/llmready/backend/.env
 
-# Start Celery worker
+# Start Celery worker (listen to generation and scheduled queues)
 ExecStart=/opt/llmready/venv/bin/celery -A app.core.celery_app worker \
     --loglevel=info \
     --concurrency=2 \
-    --max-tasks-per-child=1000
+    --max-tasks-per-child=1000 \
+    --queues=generation,scheduled
 
 # Restart on failure
 Restart=always

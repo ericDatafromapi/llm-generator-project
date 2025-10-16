@@ -101,9 +101,19 @@ export default function SubscriptionPage() {
   // Handle checkout result
   useEffect(() => {
     const checkoutStatus = searchParams.get('checkout')
+    const upgraded = searchParams.get('upgraded')
+    
     if (checkoutStatus === 'success') {
       toast.success('Payment successful! Your subscription has been updated.')
+      // Force refresh subscription data
       queryClient.invalidateQueries({ queryKey: ['subscription'] })
+      queryClient.refetchQueries({ queryKey: ['subscription'] })
+      setSearchParams({})
+    } else if (upgraded === 'true') {
+      toast.success('Subscription upgraded successfully!')
+      // Force refresh subscription data
+      queryClient.invalidateQueries({ queryKey: ['subscription'] })
+      queryClient.refetchQueries({ queryKey: ['subscription'] })
       setSearchParams({})
     } else if (checkoutStatus === 'cancelled') {
       toast.info('Checkout cancelled. You can upgrade anytime.')
