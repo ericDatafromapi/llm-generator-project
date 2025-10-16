@@ -30,11 +30,11 @@ fi
 # Get repository information from git remote
 if [ -z "$REPO_OWNER" ] || [ -z "$REPO_NAME" ]; then
     REMOTE_URL=$(git config --get remote.origin.url)
-    if [[ $REMOTE_URL == *"github.com"* ]]; then
+    if [[ $REMOTE_URL == *"github"* ]]; then
         # Extract owner and repo from GitHub URL
-        if [[ $REMOTE_URL == git@github.com:* ]]; then
-            # SSH format: git@github.com:owner/repo.git
-            REPO_PATH=$(echo $REMOTE_URL | sed 's/git@github.com://' | sed 's/.git$//')
+        if [[ $REMOTE_URL == git@* ]]; then
+            # SSH format: git@github.com:owner/repo.git or git@custom-alias:owner/repo.git
+            REPO_PATH=$(echo $REMOTE_URL | sed 's/git@[^:]*://' | sed 's/.git$//')
         else
             # HTTPS format: https://github.com/owner/repo.git
             REPO_PATH=$(echo $REMOTE_URL | sed 's#https://github.com/##' | sed 's/.git$//')
