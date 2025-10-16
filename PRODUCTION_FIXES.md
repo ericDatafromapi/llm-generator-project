@@ -121,7 +121,37 @@ if (upgraded === 'true') {
 
 ## 🚀 Deployment Instructions
 
-### Step 1: Deploy Backend Changes
+### Step 1: Commit and Push Changes
+
+```bash
+# Commit all fixes
+git add .
+git commit -m "Fix production issues: registration tokens, celery tasks, subscription UI"
+git push origin main
+```
+
+### Step 2: Deploy Using Automated Script
+
+```bash
+# Run the deployment script (triggers GitHub Actions)
+./scripts/deploy.sh
+
+# The script will:
+# 1. Verify you're in a git repository
+# 2. Check the current branch and commit
+# 3. Ask for confirmation
+# 4. Trigger the GitHub Actions deployment workflow
+# 5. Provide a link to monitor the deployment
+```
+
+**Note:** The deployment script requires:
+- `GITHUB_TOKEN` environment variable (or will prompt for it)
+- Repository push access
+- GitHub Actions workflow configured
+
+### Step 3: Install Docker on Production Server
+
+**After deployment completes**, SSH to the production server and install Docker:
 
 ```bash
 # SSH to production server
@@ -130,18 +160,7 @@ ssh user@your-server
 # Navigate to project
 cd /opt/llmready
 
-# Pull latest changes
-git pull origin main
-
-# Restart backend service
-sudo systemctl restart llmready-backend
-```
-
-### Step 2: Install Docker
-
-```bash
 # Run Docker installation script
-cd /opt/llmready
 sudo chmod +x scripts/install-docker.sh
 sudo ./scripts/install-docker.sh
 
@@ -150,14 +169,13 @@ docker --version
 docker images | grep mdream
 ```
 
-### Step 3: Restart Celery Worker
+### Step 4: Verify Celery Tasks Are Registered
 
 ```bash
-# Restart worker to load new tasks
-sudo systemctl restart llmready-celery-worker
-
-# Verify tasks are registered
+# On production server
 cd /opt/llmready/backend
+
+# Check registered tasks
 python -c "
 from app.core.celery_app import celery_app
 print('Registered tasks:')
@@ -173,36 +191,32 @@ for task in sorted(celery_app.tasks.keys()):
 #   - app.tasks.scheduled.sync_stripe_subscriptions
 ```
 
-### Step 4: Deploy Frontend Changes
+### Step 5: Restart Celery Worker
 
 ```bash
-# On local machine
-cd frontend
-npm run build
+# Restart worker to load new tasks
+sudo systemctl restart llmready-celery-worker
+sudo systemctl restart llmready-celery-beat
 
-# Deploy to production (adjust based on your deployment method)
-# Example for manual deployment:
-scp -r dist/* user@your-server:/var/www/llmready/
-
-# Or if using CI/CD, push to main branch
-git push origin main
+# Verify services are running
+sudo systemctl status llmready-celery-worker
+sudo systemctl status llmready-celery-beat
 ```
 
-### Step 5: Verify All Services
+### Step 6: Verify All Services
 
 ```bash
-# Check backend status
+# Check all services status
 sudo systemctl status llmready-backend
-
-# Check Celery worker status
 sudo systemctl status llmready-celery-worker
-
-# Check Celery beat status (scheduled tasks)
 sudo systemctl status llmready-celery-beat
 
 # Check logs for any errors
 sudo journalctl -u llmready-backend -n 50
 sudo journalctl -u llmready-celery-worker -n 50
+
+# Check for recent errors
+sudo journalctl -u llmready-backend --since "10 minutes ago" | grep -i error
 ```
 
 ---
