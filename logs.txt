@@ -1,135 +1,73 @@
-(venv) root@debian-8gb-hel1-llmgenerator:/opt/llmready# # Run generation test
-python3 scripts/test_generation_workflow.py
-
-============================================================
-🧪 LLMReady Generation Workflow Test (Production)
-============================================================
-
-INFO: Testing Docker availability...
-SUCCESS: Docker installed: Docker version 28.5.1, build e180ab8
-SUCCESS: mdream Docker image found
-INFO: Testing npx availability...
-WARNING: npx not installed
-INFO:
-=== Testing Database Connectivity ===
-INFO: Total users in database: 0
-INFO: Total websites in database: 0
-INFO: Total generations in database: 0
-INFO:
-=== Testing Celery/Redis Connectivity ===
-SUCCESS: Registered Celery tasks: 4
-INFO:   - app.tasks.scheduled.sync_stripe_subscriptions
-INFO:   - app.tasks.scheduled.cleanup_old_generations
-INFO:   - app.tasks.generation.generate_llm_content
-INFO:   - app.tasks.scheduled.reset_monthly_quotas
-ERROR: Celery/Redis error: [Errno 2] No such file or directory: 'redis-cli'
-INFO:
-=== Testing Crawler with Simple Website ===
-INFO: Created temp directory: /tmp/llmready_test_bwnclt2u
-INFO: Testing crawler with: https://example.com
-SUCCESS: Crawler succeeded in 5.99s
-INFO: Generated 3 files
-SUCCESS: llms.txt exists (57 bytes)
-INFO: Content preview:
-# Example Domain
-
-## Pages
-
-- [Example Domain](index.md)
-...
-INFO: Testing ZIP creation: /tmp/llmready_test_bwnclt2u.zip
-SUCCESS: ZIP created successfully (696 bytes)
-INFO: Cleaned up temp directory
-
-============================================================
-📊 TEST SUMMARY
-============================================================
-DOCKER: ✅ PASS
-NPX: ❌ FAIL
-DATABASE: ✅ PASS
-CELERY: ❌ FAIL
-CRAWLER: ✅ PASS
-
-⚠️  Some tests failed. Review errors above.
-
-💡 Recommendations:
-  3. Restart Celery worker: sudo systemctl restart llmready-celery-worker
-============================================================
-
-(venv) root@debian-8gb-hel1-llmgenerator:/opt/llmready#
-
-
-
-
-(venv) root@debian-8gb-hel1-llmgenerator:/opt/llmready# # Run Stripe test
-python3 scripts/test_stripe_subscription.py
-
-============================================================
-💳 LLMReady Stripe Subscription Test (Production)
-============================================================
-
-INFO:
-=== Testing Stripe Connection ===
-Traceback (most recent call last):
-  File "/opt/llmready/scripts/test_stripe_subscription.py", line 41, in test_stripe_connection
-    products = stripe.Product.list(limit=3)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/opt/llmready/venv/lib/python3.11/site-packages/stripe/_product.py", line 307, in list
-    result = cls._static_request(
-             ^^^^^^^^^^^^^^^^^^^^
-  File "/opt/llmready/venv/lib/python3.11/site-packages/stripe/_api_resource.py", line 172, in _static_request
-    return _APIRequestor._global_instance().request(
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/opt/llmready/venv/lib/python3.11/site-packages/stripe/_api_requestor.py", line 201, in request
-    resp = requestor._interpret_response(rbody, rcode, rheaders, api_mode)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/opt/llmready/venv/lib/python3.11/site-packages/stripe/_api_requestor.py", line 859, in _interpret_response
-    self.handle_error_response(
-  File "/opt/llmready/venv/lib/python3.11/site-packages/stripe/_api_requestor.py", line 342, in handle_error_response
-    raise err
-stripe._error.AuthenticationError: Invalid API Key provided: sk_test_*********here
-
-During handling of the above exception, another exception occurred:
-
-Traceback (most recent call last):
-  File "/opt/llmready/scripts/test_stripe_subscription.py", line 332, in <module>
-    sys.exit(main())
-             ^^^^^^
-  File "/opt/llmready/scripts/test_stripe_subscription.py", line 283, in main
-    "stripe_connection": test_stripe_connection(),
-                         ^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/opt/llmready/scripts/test_stripe_subscription.py", line 45, in test_stripe_connection
-    except stripe.error.AuthenticationError as e:
-           ^^^^^^^^^^^^
-AttributeError: module 'stripe' has no attribute 'error'. Did you mean: '_error'?
-
-
-(venv) root@debian-8gb-hel1-llmgenerator:/opt/llmready# sudo ./scripts/install-docker.sh
-==========================================
-Installing Docker for LLMReady
-==========================================
-Updating package index...
-Hit:1 http://deb.debian.org/debian bookworm InRelease
-Hit:2 http://deb.debian.org/debian bookworm-updates InRelease
-Get:3 http://security.debian.org/debian-security bookworm-security InRelease [48.0 kB]
-Hit:4 https://download.docker.com/linux/debian bookworm InRelease
-Hit:5 http://mirror.hetzner.com/debian/packages bookworm InRelease
-Hit:6 http://mirror.hetzner.com/debian/packages bookworm-backports InRelease
-Hit:7 http://mirror.hetzner.com/debian/packages bookworm-updates InRelease
-Hit:8 http://mirror.hetzner.com/debian/security bookworm-security InRelease
-Fetched 48.0 kB in 1s (45.2 kB/s)
-Reading package lists... Done
-Installing prerequisites...
-Reading package lists... Done
-Building dependency tree... Done
-Reading state information... Done
-ca-certificates is already the newest version (20230311+deb12u1).
-curl is already the newest version (7.88.1-10+deb12u14).
-gnupg is already the newest version (2.2.40-1.1+deb12u1).
-lsb-release is already the newest version (12.0-1).
-0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
-Adding Docker GPG key...
-File '/etc/apt/keyrings/docker.gpg' exists. Overwrite? (y/N) N
-Enter new filename:
-gpg: no valid OpenPGP data found.
-gpg: dearmoring failed: File exists
+[sentry] DEBUG: [ASGI] Created transaction (continuing trace): <Transaction(name='http://127.0.0.1:8000/api/v1/subscriptions/checkout', op='http.server', trace_id='72482c3fa9824cfa8e47b79559b9da11', span_id='ad33cd6c608c4169', parent_span_id=None, sampled=None, source='url')>
+ [sentry] DEBUG: [ASGI] Set transaction name and source on transaction: 'http://127.0.0.1:8000/api/v1/subscriptions/checkout' / 'url'
+ [sentry] DEBUG: [Tracing] Starting <http.server> transaction <http://127.0.0.1:8000/api/v1/subscriptions/checkout>
+ [sentry] DEBUG: [Profiling] Initializing profile
+ [sentry] DEBUG: [Profiling] Starting profile
+ [sentry] DEBUG: [ASGI] Started transaction: <Transaction(name='http://127.0.0.1:8000/api/v1/subscriptions/checkout', op='http.server', trace_id='72482c3fa9824cfa8e47b79559b9da11', span_id='ad33cd6c608c4169', parent_span_id=None, sampled=True, source='url')>
+ [sentry] DEBUG: [Profiling] Stopping profile
+ [sentry] DEBUG: [Profiling] Discarding profile because insufficient samples.
+ [sentry] DEBUG: [ASGI] Set transaction name and source in event_processor: 'http://127.0.0.1:8000/api/v1/subscriptions/checkout' / 'url'
+ [sentry] DEBUG: Sending envelope [envelope with 1 items (transaction)] project:4510198053142608 host:o4510198050521088.ingest.de.sentry.io
+ [sentry] DEBUG: [Tracing] Extracted propagation context from incoming data: {'dynamic_sampling_context': {'environment': 'development', 'public_key': 'd9fdec9a6d9b2bd5fea1f44346cb6ef5', 'trace_id': 'f8c0b69d3ff3448b994287a89ac81c0b'}, 'trace_id': 'f8c0b69d3ff3448b994287a89ac81c0b', 'parent_span_id': '92f4a8439c1d88cf', 'parent_sampled': None, 'span_id': 'b8d77a7f680dfc04'}
+ [sentry] DEBUG: [ASGI] Created transaction (continuing trace): <Transaction(name='http://127.0.0.1:8000/api/v1/subscriptions/checkout', op='http.server', trace_id='f8c0b69d3ff3448b994287a89ac81c0b', span_id='9b6ec293b5b119a0', parent_span_id='92f4a8439c1d88cf', sampled=None, source='url')>
+ [sentry] DEBUG: [ASGI] Set transaction name and source on transaction: 'http://127.0.0.1:8000/api/v1/subscriptions/checkout' / 'url'
+ [sentry] DEBUG: [Tracing] Starting <http.server> transaction <http://127.0.0.1:8000/api/v1/subscriptions/checkout>
+ [sentry] DEBUG: [Profiling] Initializing profile
+ [sentry] DEBUG: [Profiling] Starting profile
+ [sentry] DEBUG: [ASGI] Started transaction: <Transaction(name='http://127.0.0.1:8000/api/v1/subscriptions/checkout', op='http.server', trace_id='f8c0b69d3ff3448b994287a89ac81c0b', span_id='9b6ec293b5b119a0', parent_span_id='92f4a8439c1d88cf', sampled=True, source='url')>
+ [sentry] DEBUG: [FastAPI] Set transaction name and source on scope: app.api.v1.subscriptions.create_checkout_session / component
+2025-10-17 19:30:10 - app.services.subscription - INFO - User f95e687d-4f37-43c4-a56f-44dce3ea827d has existing subscription sub_1SIa73RHXxKeqU7yKrDux1TH, modifying instead of creating new
+2025-10-17 19:30:10 - stripe - INFO - message='Request to Stripe api' method=get url=https://api.stripe.com/v1/subscriptions/sub_1SIa73RHXxKeqU7yKrDux1TH
+ [sentry] DEBUG: [Tracing] Adding `sentry-trace` header f8c0b69d3ff3448b994287a89ac81c0b-b7fffe6b96338fef-1 to outgoing request to https://api.stripe.com/v1/subscriptions/sub_1SIa73RHXxKeqU7yKrDux1TH.
+ [sentry] DEBUG: [Tracing] Adding `baggage` header sentry-environment=development,sentry-public_key=d9fdec9a6d9b2bd5fea1f44346cb6ef5,sentry-trace_id=f8c0b69d3ff3448b994287a89ac81c0b to outgoing request to https://api.stripe.com/v1/subscriptions/sub_1SIa73RHXxKeqU7yKrDux1TH.
+2025-10-17 19:30:10 - stripe - INFO - message='Stripe API response' path=https://api.stripe.com/v1/subscriptions/sub_1SIa73RHXxKeqU7yKrDux1TH response_code=200
+2025-10-17 19:30:10 - stripe - INFO - message='Request to Stripe api' method=post url=https://api.stripe.com/v1/subscriptions/sub_1SIa73RHXxKeqU7yKrDux1TH
+ [sentry] DEBUG: [Tracing] Adding `sentry-trace` header f8c0b69d3ff3448b994287a89ac81c0b-a6e1bdf4e4816cd8-1 to outgoing request to https://api.stripe.com/v1/subscriptions/sub_1SIa73RHXxKeqU7yKrDux1TH.
+ [sentry] DEBUG: [Tracing] Adding `baggage` header sentry-environment=development,sentry-public_key=d9fdec9a6d9b2bd5fea1f44346cb6ef5,sentry-trace_id=f8c0b69d3ff3448b994287a89ac81c0b to outgoing request to https://api.stripe.com/v1/subscriptions/sub_1SIa73RHXxKeqU7yKrDux1TH.
+2025-10-17 19:30:11 - stripe - INFO - message='Stripe API response' path=https://api.stripe.com/v1/subscriptions/sub_1SIa73RHXxKeqU7yKrDux1TH response_code=200
+2025-10-17 19:30:11 - app.services.subscription - INFO - ✅ Modified subscription sub_1SIa73RHXxKeqU7yKrDux1TH to pro with proration
+ [sentry] DEBUG: [Profiling] Stopping profile
+ [sentry] DEBUG: Sending envelope [envelope with 2 items (profile, transaction)] project:4510198053142608 host:o4510198050521088.ingest.de.sentry.io
+ [sentry] DEBUG: [Tracing] Extracted propagation context from incoming data: {'dynamic_sampling_context': {'environment': 'development', 'public_key': 'd9fdec9a6d9b2bd5fea1f44346cb6ef5', 'trace_id': 'd69d28fbdce14f47aaaf9b1e8c071cc4', 'sample_rate': '1', 'sampled': 'true'}, 'trace_id': 'd69d28fbdce14f47aaaf9b1e8c071cc4', 'parent_span_id': 'b091b8ba841696aa', 'parent_sampled': True, 'span_id': '98d16031bfb79055'}
+ [sentry] DEBUG: [ASGI] Created transaction (continuing trace): <Transaction(name='http://127.0.0.1:8000/api/v1/auth/me', op='http.server', trace_id='d69d28fbdce14f47aaaf9b1e8c071cc4', span_id='9a07bb89e5969b13', parent_span_id='b091b8ba841696aa', sampled=None, source='url')>
+ [sentry] DEBUG: [ASGI] Set transaction name and source on transaction: 'http://127.0.0.1:8000/api/v1/auth/me' / 'url'
+ [sentry] DEBUG: [Tracing] Starting <http.server> transaction <http://127.0.0.1:8000/api/v1/auth/me>
+ [sentry] DEBUG: [Profiling] Initializing profile
+ [sentry] DEBUG: [Profiling] Starting profile
+ [sentry] DEBUG: [ASGI] Started transaction: <Transaction(name='http://127.0.0.1:8000/api/v1/auth/me', op='http.server', trace_id='d69d28fbdce14f47aaaf9b1e8c071cc4', span_id='9a07bb89e5969b13', parent_span_id='b091b8ba841696aa', sampled=True, source='url')>
+ [sentry] DEBUG: [FastAPI] Set transaction name and source on scope: app.api.v1.auth.get_current_user_info / component
+ [sentry] DEBUG: [Tracing] Extracted propagation context from incoming data: {'dynamic_sampling_context': {'environment': 'development', 'public_key': 'd9fdec9a6d9b2bd5fea1f44346cb6ef5', 'trace_id': 'd69d28fbdce14f47aaaf9b1e8c071cc4', 'sample_rate': '1', 'sampled': 'true'}, 'trace_id': 'd69d28fbdce14f47aaaf9b1e8c071cc4', 'parent_span_id': '8a46bfc6b2a83ca7', 'parent_sampled': True, 'span_id': '84e2192ce261cb90'}
+ [sentry] DEBUG: [ASGI] Created transaction (continuing trace): <Transaction(name='http://127.0.0.1:8000/api/v1/auth/me', op='http.server', trace_id='d69d28fbdce14f47aaaf9b1e8c071cc4', span_id='a4f08c084970f1fe', parent_span_id='8a46bfc6b2a83ca7', sampled=None, source='url')>
+ [sentry] DEBUG: [ASGI] Set transaction name and source on transaction: 'http://127.0.0.1:8000/api/v1/auth/me' / 'url'
+ [sentry] DEBUG: [Tracing] Starting <http.server> transaction <http://127.0.0.1:8000/api/v1/auth/me>
+ [sentry] DEBUG: [Profiling] Initializing profile
+ [sentry] DEBUG: [Profiling] Starting profile
+ [sentry] DEBUG: [ASGI] Started transaction: <Transaction(name='http://127.0.0.1:8000/api/v1/auth/me', op='http.server', trace_id='d69d28fbdce14f47aaaf9b1e8c071cc4', span_id='a4f08c084970f1fe', parent_span_id='8a46bfc6b2a83ca7', sampled=True, source='url')>
+ [sentry] DEBUG: [FastAPI] Set transaction name and source on scope: app.api.v1.auth.get_current_user_info / component
+ [sentry] DEBUG: [Profiling] Stopping profile
+ [sentry] DEBUG: [Profiling] Discarding profile because insufficient samples.
+ [sentry] DEBUG: Sending envelope [envelope with 1 items (transaction)] project:4510198053142608 host:o4510198050521088.ingest.de.sentry.io
+ [sentry] DEBUG: [Profiling] Stopping profile
+ [sentry] DEBUG: [Profiling] Discarding profile because insufficient samples.
+ [sentry] DEBUG: [Tracing] Extracted propagation context from incoming data: {'dynamic_sampling_context': {'environment': 'development', 'public_key': 'd9fdec9a6d9b2bd5fea1f44346cb6ef5', 'trace_id': 'd69d28fbdce14f47aaaf9b1e8c071cc4', 'sample_rate': '1', 'sampled': 'true'}, 'trace_id': 'd69d28fbdce14f47aaaf9b1e8c071cc4', 'parent_span_id': '84debca91ba9803f', 'parent_sampled': True, 'span_id': '9d8b782782581c09'}
+ [sentry] DEBUG: [ASGI] Created transaction (continuing trace): <Transaction(name='http://127.0.0.1:8000/api/v1/subscriptions/current', op='http.server', trace_id='d69d28fbdce14f47aaaf9b1e8c071cc4', span_id='bc67ace126547454', parent_span_id='84debca91ba9803f', sampled=None, source='url')>
+ [sentry] DEBUG: [ASGI] Set transaction name and source on transaction: 'http://127.0.0.1:8000/api/v1/subscriptions/current' / 'url'
+ [sentry] DEBUG: [Tracing] Starting <http.server> transaction <http://127.0.0.1:8000/api/v1/subscriptions/current>
+ [sentry] DEBUG: [Profiling] Initializing profile
+ [sentry] DEBUG: [Profiling] Starting profile
+ [sentry] DEBUG: [ASGI] Started transaction: <Transaction(name='http://127.0.0.1:8000/api/v1/subscriptions/current', op='http.server', trace_id='d69d28fbdce14f47aaaf9b1e8c071cc4', span_id='bc67ace126547454', parent_span_id='84debca91ba9803f', sampled=True, source='url')>
+ [sentry] DEBUG: [FastAPI] Set transaction name and source on scope: app.api.v1.subscriptions.get_current_subscription / component
+ [sentry] DEBUG: [Tracing] Extracted propagation context from incoming data: {'dynamic_sampling_context': {'environment': 'development', 'public_key': 'd9fdec9a6d9b2bd5fea1f44346cb6ef5', 'trace_id': 'd69d28fbdce14f47aaaf9b1e8c071cc4', 'sample_rate': '1', 'sampled': 'true'}, 'trace_id': 'd69d28fbdce14f47aaaf9b1e8c071cc4', 'parent_span_id': 'ab073fff54705644', 'parent_sampled': True, 'span_id': 'abb06a69ca56dfb4'}
+ [sentry] DEBUG: [ASGI] Created transaction (continuing trace): <Transaction(name='http://127.0.0.1:8000/api/v1/websites/stats/user', op='http.server', trace_id='d69d28fbdce14f47aaaf9b1e8c071cc4', span_id='ad015abbc0275fc8', parent_span_id='ab073fff54705644', sampled=None, source='url')>
+ [sentry] DEBUG: [ASGI] Set transaction name and source on transaction: 'http://127.0.0.1:8000/api/v1/websites/stats/user' / 'url'
+ [sentry] DEBUG: [Tracing] Starting <http.server> transaction <http://127.0.0.1:8000/api/v1/websites/stats/user>
+ [sentry] DEBUG: [Profiling] Initializing profile
+ [sentry] DEBUG: [Profiling] Starting profile
+ [sentry] DEBUG: [ASGI] Started transaction: <Transaction(name='http://127.0.0.1:8000/api/v1/websites/stats/user', op='http.server', trace_id='d69d28fbdce14f47aaaf9b1e8c071cc4', span_id='ad015abbc0275fc8', parent_span_id='ab073fff54705644', sampled=True, source='url')>
+ [sentry] DEBUG: [FastAPI] Set transaction name and source on scope: app.api.v1.websites.get_user_stats / component
+ [sentry] DEBUG: Sending envelope [envelope with 1 items (transaction)] project:4510198053142608 host:o4510198050521088.ingest.de.sentry.io
+ [sentry] DEBUG: [Profiling] updating active thread id to 12935360512
+ [sentry] DEBUG: [Profiling] Stopping profile
+ [sentry] DEBUG: Sending envelope [envelope with 2 items (profile, transaction)] project:4510198053142608 host:o4510198050521088.ingest.de.sentry.io
+ [sentry] DEBUG: [Profiling] Stopping profile
+ [sentry] DEBUG: Sending envelope [envelope with 2 items (profile, transaction)] project:4510198053142608 host:o4510198050521088.ingest.de.sentry.io
