@@ -99,7 +99,7 @@ class SubscriptionService:
             
             subscription_item_id = items_data[0]['id']
             
-            # Modify subscription with proration
+            # Modify subscription with proration and immediate billing
             updated_subscription = stripe.Subscription.modify(
                 subscription.stripe_subscription_id,
                 items=[{
@@ -107,6 +107,8 @@ class SubscriptionService:
                     'price': new_price_id,
                 }],
                 proration_behavior='create_prorations',  # Automatic proration
+                billing_cycle_anchor='now',  # Reset billing cycle to now (charge immediately)
+                proration_date=int(datetime.utcnow().timestamp())  # Calculate proration from now
             )
             
             logger.info(f"✅ Modified subscription {subscription.stripe_subscription_id} to {plan_type} with proration")
