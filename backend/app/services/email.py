@@ -705,6 +705,168 @@ def increment_generation_usage(db: any, user_id: any) -> None:
     service.increment_usage(user_id)
 
 
+
+async def send_subscription_payment_email_async(
+    to_email: str,
+    user_name: Optional[str],
+    plan_name: str,
+    amount_paid: float,
+    billing_interval: str,
+    next_billing_date: str,
+    features: list
+) -> bool:
+    """
+    Send detailed payment confirmation with subscription info.
+    
+    Args:
+        to_email: Recipient email
+        user_name: User's name
+        plan_name: Plan name (Starter, Standard, Pro)
+        amount_paid: Amount charged
+        billing_interval: monthly or yearly
+        next_billing_date: Date of next renewal
+        features: List of plan features
+    """
+    name_greeting = f"Hi {user_name}," if user_name else "Hi there,"
+    
+    features_html = "".join([
+        f'<li style="padding: 5px 0;">{feature}</li>'
+        for feature in features
+    ])
+    
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+            <h1 style="color: white; margin: 0;">🎉 Payment Successful!</h1>
+        </div>
+        
+        <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px;">
+            <p style="font-size: 16px;">{name_greeting}</p>
+            
+            <p style="font-size: 16px;">Thank you for your payment! Your <strong>{plan_name}</strong> subscription is now active.</p>
+            
+            <!-- Payment Summary -->
+            <div style="background: #fff; padding: 25px; border-radius: 8px; margin: 25px 0; border: 2px solid #10b981;">
+                <h3 style="margin-top: 0; color: #667eea; font-size: 18px;">Payment Summary</h3>
+                <table style="width: 100%; border-collapse: collapse;">
+                    <tr style="border-bottom: 1px solid #e5e7eb;">
+                        <td style="padding: 12px 0; color: #666;">Plan:</td>
+                        <td style="padding: 12px 0; text-align: right; font-weight: bold;">{plan_name} ({billing_interval.title()})</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #e5e7eb;">
+                        <td style="padding: 12px 0; color: #666;">Amount Paid:</td>
+                        <td style="padding: 12px 0; text-align: right; font-weight: bold; color: #10b981;">€{amount_paid:.2f}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 12px 0; color: #666;">Next Billing:</td>
+                        <td style="padding: 12px 0; text-align: right; font-weight: bold;">{next_billing_date}</td>
+                    </tr>
+                </table>
+            </div>
+            
+            <!-- Plan Features -->
+            <div style="background: #fff; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                <h3 style="margin-top: 0; color: #667eea; font-size: 16px;">Your {plan_name} Plan Includes:</h3>
+                <ul style="font-size: 14px; color: #666; margin: 0; padding-left: 20px;">
+                    {features_html}
+                </ul>
+            </div>
+            
+            <div style="background: #eff6ff; padding: 15px; border-radius: 5px; border-left: 4px solid #3b82f6; margin: 20px 0;">
+                <p style="margin: 0; font-size: 14px; color: #1e40af;">
+                    <strong>📧 Invoice:</strong> A detailed invoice has been sent to your email and is available in your Stripe customer portal.
+                </p>
+            </div>
+            
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="{settings.FRONTEND_URL}/dashboard"
+                   style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                          color: white;
+                          padding: 15px 40px;
+                          text-decoration: none;
+                          border-radius: 5px;
+                          font-weight: bold;
+                          display: inline-block;">
+                    Go to Dashboard
+                </a>
+            </div>
+            
+            <p style="font-size: 12px; color: #999; text-align: center; margin-top: 20px;">
+                Questions? Contact us at {settings.FROM_EMAIL}
+            </p>
+        </div>
+        
+        <div style="text-align: center; margin-top: 20px; color: #999; font-size: 12px;">
+            <p>© 2025 LLMReady. All rights reserved.</p>
+        </div>
+    </body>
+    </html>
+    """
+    
+    features_text = "\n".join([f"  • {feature}" for feature in features])
+    
+    text_content = f"""
+    {name_greeting}
+    
+    Thank you for your payment! Your {plan_name} subscription is now active.
+    
+    PAYMENT SUMMARY
+    ---------------
+    Plan: {plan_name} ({billing_interval.title()})
+    Amount Paid: €{amount_paid:.2f}
+    Next Billing: {next_billing_date}
+    
+    YOUR {plan_name.upper()} PLAN INCLUDES:
+    {features_text}
+    
+    📧 Invoice: A detailed invoice has been sent to your email and is available in your Stripe customer portal.
+    
+    Dashboard: {settings.FRONTEND_URL}/dashboard
+    
+    Questions? Contact us at {settings.FROM_EMAIL}
+    
+    Best regards,
+    The LLMReady Team
+    """
+    
+    return await email_service.send_email(
+        to_email=to_email,
+        subject=f"Payment Confirmed - {plan_name} Plan Active! 🎉",
+        html_content=html_content,
+        text_content=text_content
+    )
+
+
+def send_subscription_payment_email(
+    to_email: str,
+    user_name: Optional[str],
+    plan_name: str,
+    amount_paid: float,
+    billing_interval: str,
+    next_billing_date: str,
+    features: list
+) -> bool:
+    """Synchronous wrapper for subscription payment email."""
+    import asyncio
+    try:
+        loop = asyncio.get_event_loop()
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+    
+    return loop.run_until_complete(
+        send_subscription_payment_email_async(
+            to_email, user_name, plan_name, amount_paid,
+            billing_interval, next_billing_date, features
+        )
+    )
+
 # Stripe-related email functions
 async def send_payment_success_email_async(to_email: str, amount_paid: float, user_name: Optional[str] = None) -> bool:
     """Send payment success confirmation email."""

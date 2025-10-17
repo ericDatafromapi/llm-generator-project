@@ -92,24 +92,47 @@ class SubscriptionService:
             # Convert to dict for consistent access
             stripe_sub_dict = dict(stripe_subscription)
             
-            # Get current subscription item ID
+            # Get current subscription item ID and current price
             items_data = stripe_sub_dict.get('items', {}).get('data', [])
             if not items_data:
                 raise ValueError("No subscription items found")
             
             subscription_item_id = items_data[0]['id']
+            current_price_id = items_data[0].get('price', {}).get('id', '')
+            current_price_amount = items_data[0].get('price', {}).get('unit_amount', 0)
             
-            # Modify subscription with proration and immediate billing
-            updated_subscription = stripe.Subscription.modify(
-                subscription.stripe_subscription_id,
-                items=[{
-                    'id': subscription_item_id,
-                    'price': new_price_id,
-                }],
-                proration_behavior='create_prorations',  # Automatic proration
-                billing_cycle_anchor='now',  # Reset billing cycle to now (charge immediately)
-                proration_date=int(datetime.utcnow().timestamp())  # Calculate proration from now
-            )
+            # Get new price amount to determine if upgrade or downgrade
+            new_price = stripe.Price.retrieve(new_price_id)
+            new_price_amount = new_price.unit_amount
+            
+            is_upgrade = new_price_amount > current_price_amount
+            
+            logger.info(f"Plan change detected: {'UPGRADE' if is_upgrade else 'DOWNGRADE'} from {current_price_id} to {new_price_id}")
+            
+            # Modify subscription
+            if is_upgrade:
+                # UPGRADE: Reset billing cycle and charge immediately
+                updated_subscription = stripe.Subscription.modify(
+                    subscription.stripe_subscription_id,
+                    items=[{
+                        'id': subscription_item_id,
+                        'price': new_price_id,
+                    }],
+                    proration_behavior='create_prorations',
+                    billing_cycle_anchor='now'  # Reset cycle for immediate upgrade (proration automatic)
+                )
+                logger.info(f"✅ Upgrade applied with immediate billing and cycle reset")
+            else:
+                # DOWNGRADE: Keep current billing cycle, apply at period end
+                updated_subscription = stripe.Subscription.modify(
+                    subscription.stripe_subscription_id,
+                    items=[{
+                        'id': subscription_item_id,
+                        'price': new_price_id,
+                    }],
+                    proration_behavior='create_prorations'  # Give credit for unused time
+                )
+                logger.info(f"✅ Downgrade applied with proration, keeping existing billing cycle")
             
             logger.info(f"✅ Modified subscription {subscription.stripe_subscription_id} to {plan_type} with proration")
             

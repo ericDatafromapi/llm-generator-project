@@ -20,12 +20,14 @@ from app.core.subscription_plans import get_plan_limits
 from app.services.subscription import SubscriptionService
 from app.services.email import (
     send_payment_success_email,
+    send_subscription_payment_email,
     send_payment_failed_email,
     send_chargeback_email,
     send_refund_email,
     send_payment_action_required_email,
     send_subscription_canceled_email
 )
+from app.core.subscription_plans import PLAN_FEATURES
 
 # Configure Stripe
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -414,7 +416,7 @@ def handle_payment_failed(
 
 
 def handle_payment_succeeded(event_data: Dict[str, Any], db: Session) -> None:
-    """Handle successful payment events."""
+    """Handle successful payment events with detailed email."""
     invoice_data = event_data
     subscription_id = invoice_data.get("subscription")
     amount_paid = invoice_data.get("amount_paid", 0) / 100  # Convert from cents
@@ -430,13 +432,40 @@ def handle_payment_succeeded(event_data: Dict[str, Any], db: Session) -> None:
             subscription.updated_at = datetime.utcnow()
             db.commit()
             
-            # Send success email
+            # Send detailed payment email with subscription info
             user = db.query(User).filter(User.id == subscription.user_id).first()
             if user:
                 try:
-                    send_payment_success_email(user.email, amount_paid, user.full_name)
+                    # Get plan details
+                    plan_name = subscription.plan_type.title()
+                    
+                    # Determine billing interval from subscription
+                    stripe_sub = stripe.Subscription.retrieve(subscription_id)
+                    billing_interval = stripe_sub.get('items', {}).get('data', [{}])[0].get('price', {}).get('recurring', {}).get('interval', 'monthly')
+                    
+                    # Get plan features
+                    features = PLAN_FEATURES.get(subscription.plan_type, {}).get('features', [])
+                    
+                    # Format next billing date
+                    next_billing = subscription.current_period_end.strftime('%B %d, %Y') if subscription.current_period_end else "N/A"
+                    
+                    # Send detailed email
+                    send_subscription_payment_email(
+                        to_email=user.email,
+                        user_name=user.full_name,
+                        plan_name=plan_name,
+                        amount_paid=amount_paid,
+                        billing_interval=billing_interval,
+                        next_billing_date=next_billing,
+                        features=features
+                    )
                 except Exception as e:
-                    logger.error(f"Failed to send payment success email: {e}")
+                    logger.error(f"Failed to send detailed payment email: {e}")
+                    # Fallback to basic email
+                    try:
+                        send_payment_success_email(user.email, amount_paid, user.full_name)
+                    except Exception as e2:
+                        logger.error(f"Failed to send fallback payment email: {e2}")
     
     logger.info(f"Payment succeeded for subscription {subscription_id}: €{amount_paid}")
 
