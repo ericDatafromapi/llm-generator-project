@@ -221,6 +221,14 @@ jobs:
             cd backend
             source ../venv/bin/activate 2>/dev/null || python3 -m venv ../venv && source ../venv/bin/activate
             pip install -q -r requirements.txt
+            
+            # Export DATABASE_URL from .env file before running migrations
+            export $(grep -v '^#' .env | grep DATABASE_URL | xargs)
+            
+            # Create database if it doesn't exist
+            DB_NAME=$(echo $DATABASE_URL | sed 's/.*\///')
+            docker exec -i $(docker ps -qf "name=postgres") psql -U postgres -c "CREATE DATABASE $DB_NAME;" 2>/dev/null || echo "Database already exists"
+            
             alembic upgrade head
             cd ..
             
