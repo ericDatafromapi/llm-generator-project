@@ -4,6 +4,7 @@ import { api } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import {
   FileStack,
   Download,
@@ -12,10 +13,21 @@ import {
   XCircle,
   Clock,
   Search,
-  Filter
+  Filter,
+  Calendar as CalendarIcon,
+  X
 } from 'lucide-react'
-import type { Generation, PaginatedResponse } from '@/types'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { format } from 'date-fns'
+import type { Generation, PaginatedResponse } from '@/types'
 import { RecommendationCard } from '@/components/RecommendationCard'
 import { DeploymentTipsModal } from '@/components/DeploymentTipsModal'
 
@@ -48,6 +60,7 @@ const STATUS_CONFIG = {
 
 export default function GenerationsPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [dateFilter, setDateFilter] = useState<string>('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedRecommendation, setSelectedRecommendation] = useState<Generation | null>(null)
 
@@ -71,14 +84,38 @@ export default function GenerationsPage() {
     },
   })
 
-  // Filter generations by search query
+  // Filter generations by search query and date
   const filteredGenerations = generationsData?.items.filter((gen) => {
-    if (!searchQuery) return true
-    const query = searchQuery.toLowerCase()
-    return (
-      gen.id.toLowerCase().includes(query) ||
-      gen.website_id.toLowerCase().includes(query)
-    )
+    // Search filter (by website name or URL)
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase()
+      const websiteName = (gen.website_name || '').toLowerCase()
+      const websiteUrl = (gen.website_url || '').toLowerCase()
+      if (!websiteName.includes(query) && !websiteUrl.includes(query)) {
+        return false
+      }
+    }
+    
+    // Date filter
+    if (dateFilter !== 'all') {
+      const genDate = new Date(gen.created_at)
+      const now = new Date()
+      const daysDiff = Math.floor((now.getTime() - genDate.getTime()) / (1000 * 60 * 60 * 24))
+      
+      switch (dateFilter) {
+        case 'today':
+          if (daysDiff > 0) return false
+          break
+        case 'week':
+          if (daysDiff > 7) return false
+          break
+        case 'month':
+          if (daysDiff > 30) return false
+          break
+      }
+    }
+    
+    return true
   })
 
   const handleDownload = async (generationId: string) => {
@@ -114,48 +151,89 @@ export default function GenerationsPage() {
       {/* Filters */}
       <Card>
         <CardContent className="pt-6">
-          <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex flex-col gap-4">
             {/* Search */}
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search by ID..."
+                placeholder="Search by website name or URL..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-9"
               />
             </div>
 
-            {/* Status Filter */}
-            <div className="flex gap-2">
-              <Button
-                variant={statusFilter === 'all' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setStatusFilter('all')}
-              >
-                All
-              </Button>
-              <Button
-                variant={statusFilter === 'completed' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setStatusFilter('completed')}
-              >
-                Completed
-              </Button>
-              <Button
-                variant={statusFilter === 'processing' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setStatusFilter('processing')}
-              >
-                Processing
-              </Button>
-              <Button
-                variant={statusFilter === 'failed' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setStatusFilter('failed')}
-              >
-                Failed
-              </Button>
+            {/* Filter Row */}
+            <div className="flex flex-col sm:flex-row gap-4">
+              {/* Status Filter Dropdown */}
+              <div className="flex-1">
+                <Label className="text-sm text-muted-foreground mb-2 block">Status</Label>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="w-full justify-between">
+                      <span className="flex items-center gap-2">
+                        <Filter className="h-4 w-4" />
+                        {statusFilter === 'all' ? 'All Statuses' :
+                         statusFilter === 'completed' ? 'Completed' :
+                         statusFilter === 'processing' ? 'Processing' :
+                         statusFilter === 'pending' ? 'Pending' : 'Failed'}
+                      </span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56">
+                    <DropdownMenuLabel>Filter by Status</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuRadioGroup value={statusFilter} onValueChange={setStatusFilter}>
+                      <DropdownMenuRadioItem value="all">All Statuses</DropdownMenuRadioItem>
+                      <DropdownMenuRadioItem value="completed">Completed</DropdownMenuRadioItem>
+                      <DropdownMenuRadioItem value="processing">Processing</DropdownMenuRadioItem>
+                      <DropdownMenuRadioItem value="pending">Pending</DropdownMenuRadioItem>
+                      <DropdownMenuRadioItem value="failed">Failed</DropdownMenuRadioItem>
+                    </DropdownMenuRadioGroup>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+
+              {/* Date Filter - Dropdown Only */}
+              <div className="flex-1">
+                <Label className="text-sm text-muted-foreground mb-2 block">Time Period</Label>
+                <div className="flex gap-2">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" className="w-full justify-between">
+                        <span className="flex items-center gap-2">
+                          <CalendarIcon className="h-4 w-4" />
+                          {dateFilter === 'all' ? 'All Time' :
+                           dateFilter === 'today' ? 'Today' :
+                           dateFilter === 'week' ? 'Last 7 Days' : 'Last 30 Days'}
+                        </span>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-56">
+                      <DropdownMenuLabel>Filter by Date</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuRadioGroup value={dateFilter} onValueChange={setDateFilter}>
+                        <DropdownMenuRadioItem value="all">All Time</DropdownMenuRadioItem>
+                        <DropdownMenuRadioItem value="today">Today</DropdownMenuRadioItem>
+                        <DropdownMenuRadioItem value="week">Last 7 Days</DropdownMenuRadioItem>
+                        <DropdownMenuRadioItem value="month">Last 30 Days</DropdownMenuRadioItem>
+                      </DropdownMenuRadioGroup>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  
+                  {/* Clear filter */}
+                  {dateFilter !== 'all' && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setDateFilter('all')}
+                      title="Clear date filter"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </CardContent>
