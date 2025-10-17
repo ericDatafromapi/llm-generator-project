@@ -1,73 +1,27 @@
-[sentry] DEBUG: [ASGI] Created transaction (continuing trace): <Transaction(name='http://127.0.0.1:8000/api/v1/subscriptions/checkout', op='http.server', trace_id='72482c3fa9824cfa8e47b79559b9da11', span_id='ad33cd6c608c4169', parent_span_id=None, sampled=None, source='url')>
- [sentry] DEBUG: [ASGI] Set transaction name and source on transaction: 'http://127.0.0.1:8000/api/v1/subscriptions/checkout' / 'url'
- [sentry] DEBUG: [Tracing] Starting <http.server> transaction <http://127.0.0.1:8000/api/v1/subscriptions/checkout>
- [sentry] DEBUG: [Profiling] Initializing profile
- [sentry] DEBUG: [Profiling] Starting profile
- [sentry] DEBUG: [ASGI] Started transaction: <Transaction(name='http://127.0.0.1:8000/api/v1/subscriptions/checkout', op='http.server', trace_id='72482c3fa9824cfa8e47b79559b9da11', span_id='ad33cd6c608c4169', parent_span_id=None, sampled=True, source='url')>
- [sentry] DEBUG: [Profiling] Stopping profile
- [sentry] DEBUG: [Profiling] Discarding profile because insufficient samples.
- [sentry] DEBUG: [ASGI] Set transaction name and source in event_processor: 'http://127.0.0.1:8000/api/v1/subscriptions/checkout' / 'url'
- [sentry] DEBUG: Sending envelope [envelope with 1 items (transaction)] project:4510198053142608 host:o4510198050521088.ingest.de.sentry.io
- [sentry] DEBUG: [Tracing] Extracted propagation context from incoming data: {'dynamic_sampling_context': {'environment': 'development', 'public_key': 'd9fdec9a6d9b2bd5fea1f44346cb6ef5', 'trace_id': 'f8c0b69d3ff3448b994287a89ac81c0b'}, 'trace_id': 'f8c0b69d3ff3448b994287a89ac81c0b', 'parent_span_id': '92f4a8439c1d88cf', 'parent_sampled': None, 'span_id': 'b8d77a7f680dfc04'}
- [sentry] DEBUG: [ASGI] Created transaction (continuing trace): <Transaction(name='http://127.0.0.1:8000/api/v1/subscriptions/checkout', op='http.server', trace_id='f8c0b69d3ff3448b994287a89ac81c0b', span_id='9b6ec293b5b119a0', parent_span_id='92f4a8439c1d88cf', sampled=None, source='url')>
- [sentry] DEBUG: [ASGI] Set transaction name and source on transaction: 'http://127.0.0.1:8000/api/v1/subscriptions/checkout' / 'url'
- [sentry] DEBUG: [Tracing] Starting <http.server> transaction <http://127.0.0.1:8000/api/v1/subscriptions/checkout>
- [sentry] DEBUG: [Profiling] Initializing profile
- [sentry] DEBUG: [Profiling] Starting profile
- [sentry] DEBUG: [ASGI] Started transaction: <Transaction(name='http://127.0.0.1:8000/api/v1/subscriptions/checkout', op='http.server', trace_id='f8c0b69d3ff3448b994287a89ac81c0b', span_id='9b6ec293b5b119a0', parent_span_id='92f4a8439c1d88cf', sampled=True, source='url')>
- [sentry] DEBUG: [FastAPI] Set transaction name and source on scope: app.api.v1.subscriptions.create_checkout_session / component
-2025-10-17 19:30:10 - app.services.subscription - INFO - User f95e687d-4f37-43c4-a56f-44dce3ea827d has existing subscription sub_1SIa73RHXxKeqU7yKrDux1TH, modifying instead of creating new
-2025-10-17 19:30:10 - stripe - INFO - message='Request to Stripe api' method=get url=https://api.stripe.com/v1/subscriptions/sub_1SIa73RHXxKeqU7yKrDux1TH
- [sentry] DEBUG: [Tracing] Adding `sentry-trace` header f8c0b69d3ff3448b994287a89ac81c0b-b7fffe6b96338fef-1 to outgoing request to https://api.stripe.com/v1/subscriptions/sub_1SIa73RHXxKeqU7yKrDux1TH.
- [sentry] DEBUG: [Tracing] Adding `baggage` header sentry-environment=development,sentry-public_key=d9fdec9a6d9b2bd5fea1f44346cb6ef5,sentry-trace_id=f8c0b69d3ff3448b994287a89ac81c0b to outgoing request to https://api.stripe.com/v1/subscriptions/sub_1SIa73RHXxKeqU7yKrDux1TH.
-2025-10-17 19:30:10 - stripe - INFO - message='Stripe API response' path=https://api.stripe.com/v1/subscriptions/sub_1SIa73RHXxKeqU7yKrDux1TH response_code=200
-2025-10-17 19:30:10 - stripe - INFO - message='Request to Stripe api' method=post url=https://api.stripe.com/v1/subscriptions/sub_1SIa73RHXxKeqU7yKrDux1TH
- [sentry] DEBUG: [Tracing] Adding `sentry-trace` header f8c0b69d3ff3448b994287a89ac81c0b-a6e1bdf4e4816cd8-1 to outgoing request to https://api.stripe.com/v1/subscriptions/sub_1SIa73RHXxKeqU7yKrDux1TH.
- [sentry] DEBUG: [Tracing] Adding `baggage` header sentry-environment=development,sentry-public_key=d9fdec9a6d9b2bd5fea1f44346cb6ef5,sentry-trace_id=f8c0b69d3ff3448b994287a89ac81c0b to outgoing request to https://api.stripe.com/v1/subscriptions/sub_1SIa73RHXxKeqU7yKrDux1TH.
-2025-10-17 19:30:11 - stripe - INFO - message='Stripe API response' path=https://api.stripe.com/v1/subscriptions/sub_1SIa73RHXxKeqU7yKrDux1TH response_code=200
-2025-10-17 19:30:11 - app.services.subscription - INFO - ✅ Modified subscription sub_1SIa73RHXxKeqU7yKrDux1TH to pro with proration
- [sentry] DEBUG: [Profiling] Stopping profile
- [sentry] DEBUG: Sending envelope [envelope with 2 items (profile, transaction)] project:4510198053142608 host:o4510198050521088.ingest.de.sentry.io
- [sentry] DEBUG: [Tracing] Extracted propagation context from incoming data: {'dynamic_sampling_context': {'environment': 'development', 'public_key': 'd9fdec9a6d9b2bd5fea1f44346cb6ef5', 'trace_id': 'd69d28fbdce14f47aaaf9b1e8c071cc4', 'sample_rate': '1', 'sampled': 'true'}, 'trace_id': 'd69d28fbdce14f47aaaf9b1e8c071cc4', 'parent_span_id': 'b091b8ba841696aa', 'parent_sampled': True, 'span_id': '98d16031bfb79055'}
- [sentry] DEBUG: [ASGI] Created transaction (continuing trace): <Transaction(name='http://127.0.0.1:8000/api/v1/auth/me', op='http.server', trace_id='d69d28fbdce14f47aaaf9b1e8c071cc4', span_id='9a07bb89e5969b13', parent_span_id='b091b8ba841696aa', sampled=None, source='url')>
- [sentry] DEBUG: [ASGI] Set transaction name and source on transaction: 'http://127.0.0.1:8000/api/v1/auth/me' / 'url'
- [sentry] DEBUG: [Tracing] Starting <http.server> transaction <http://127.0.0.1:8000/api/v1/auth/me>
- [sentry] DEBUG: [Profiling] Initializing profile
- [sentry] DEBUG: [Profiling] Starting profile
- [sentry] DEBUG: [ASGI] Started transaction: <Transaction(name='http://127.0.0.1:8000/api/v1/auth/me', op='http.server', trace_id='d69d28fbdce14f47aaaf9b1e8c071cc4', span_id='9a07bb89e5969b13', parent_span_id='b091b8ba841696aa', sampled=True, source='url')>
- [sentry] DEBUG: [FastAPI] Set transaction name and source on scope: app.api.v1.auth.get_current_user_info / component
- [sentry] DEBUG: [Tracing] Extracted propagation context from incoming data: {'dynamic_sampling_context': {'environment': 'development', 'public_key': 'd9fdec9a6d9b2bd5fea1f44346cb6ef5', 'trace_id': 'd69d28fbdce14f47aaaf9b1e8c071cc4', 'sample_rate': '1', 'sampled': 'true'}, 'trace_id': 'd69d28fbdce14f47aaaf9b1e8c071cc4', 'parent_span_id': '8a46bfc6b2a83ca7', 'parent_sampled': True, 'span_id': '84e2192ce261cb90'}
- [sentry] DEBUG: [ASGI] Created transaction (continuing trace): <Transaction(name='http://127.0.0.1:8000/api/v1/auth/me', op='http.server', trace_id='d69d28fbdce14f47aaaf9b1e8c071cc4', span_id='a4f08c084970f1fe', parent_span_id='8a46bfc6b2a83ca7', sampled=None, source='url')>
- [sentry] DEBUG: [ASGI] Set transaction name and source on transaction: 'http://127.0.0.1:8000/api/v1/auth/me' / 'url'
- [sentry] DEBUG: [Tracing] Starting <http.server> transaction <http://127.0.0.1:8000/api/v1/auth/me>
- [sentry] DEBUG: [Profiling] Initializing profile
- [sentry] DEBUG: [Profiling] Starting profile
- [sentry] DEBUG: [ASGI] Started transaction: <Transaction(name='http://127.0.0.1:8000/api/v1/auth/me', op='http.server', trace_id='d69d28fbdce14f47aaaf9b1e8c071cc4', span_id='a4f08c084970f1fe', parent_span_id='8a46bfc6b2a83ca7', sampled=True, source='url')>
- [sentry] DEBUG: [FastAPI] Set transaction name and source on scope: app.api.v1.auth.get_current_user_info / component
- [sentry] DEBUG: [Profiling] Stopping profile
- [sentry] DEBUG: [Profiling] Discarding profile because insufficient samples.
- [sentry] DEBUG: Sending envelope [envelope with 1 items (transaction)] project:4510198053142608 host:o4510198050521088.ingest.de.sentry.io
- [sentry] DEBUG: [Profiling] Stopping profile
- [sentry] DEBUG: [Profiling] Discarding profile because insufficient samples.
- [sentry] DEBUG: [Tracing] Extracted propagation context from incoming data: {'dynamic_sampling_context': {'environment': 'development', 'public_key': 'd9fdec9a6d9b2bd5fea1f44346cb6ef5', 'trace_id': 'd69d28fbdce14f47aaaf9b1e8c071cc4', 'sample_rate': '1', 'sampled': 'true'}, 'trace_id': 'd69d28fbdce14f47aaaf9b1e8c071cc4', 'parent_span_id': '84debca91ba9803f', 'parent_sampled': True, 'span_id': '9d8b782782581c09'}
- [sentry] DEBUG: [ASGI] Created transaction (continuing trace): <Transaction(name='http://127.0.0.1:8000/api/v1/subscriptions/current', op='http.server', trace_id='d69d28fbdce14f47aaaf9b1e8c071cc4', span_id='bc67ace126547454', parent_span_id='84debca91ba9803f', sampled=None, source='url')>
- [sentry] DEBUG: [ASGI] Set transaction name and source on transaction: 'http://127.0.0.1:8000/api/v1/subscriptions/current' / 'url'
- [sentry] DEBUG: [Tracing] Starting <http.server> transaction <http://127.0.0.1:8000/api/v1/subscriptions/current>
- [sentry] DEBUG: [Profiling] Initializing profile
- [sentry] DEBUG: [Profiling] Starting profile
- [sentry] DEBUG: [ASGI] Started transaction: <Transaction(name='http://127.0.0.1:8000/api/v1/subscriptions/current', op='http.server', trace_id='d69d28fbdce14f47aaaf9b1e8c071cc4', span_id='bc67ace126547454', parent_span_id='84debca91ba9803f', sampled=True, source='url')>
- [sentry] DEBUG: [FastAPI] Set transaction name and source on scope: app.api.v1.subscriptions.get_current_subscription / component
- [sentry] DEBUG: [Tracing] Extracted propagation context from incoming data: {'dynamic_sampling_context': {'environment': 'development', 'public_key': 'd9fdec9a6d9b2bd5fea1f44346cb6ef5', 'trace_id': 'd69d28fbdce14f47aaaf9b1e8c071cc4', 'sample_rate': '1', 'sampled': 'true'}, 'trace_id': 'd69d28fbdce14f47aaaf9b1e8c071cc4', 'parent_span_id': 'ab073fff54705644', 'parent_sampled': True, 'span_id': 'abb06a69ca56dfb4'}
- [sentry] DEBUG: [ASGI] Created transaction (continuing trace): <Transaction(name='http://127.0.0.1:8000/api/v1/websites/stats/user', op='http.server', trace_id='d69d28fbdce14f47aaaf9b1e8c071cc4', span_id='ad015abbc0275fc8', parent_span_id='ab073fff54705644', sampled=None, source='url')>
- [sentry] DEBUG: [ASGI] Set transaction name and source on transaction: 'http://127.0.0.1:8000/api/v1/websites/stats/user' / 'url'
- [sentry] DEBUG: [Tracing] Starting <http.server> transaction <http://127.0.0.1:8000/api/v1/websites/stats/user>
- [sentry] DEBUG: [Profiling] Initializing profile
- [sentry] DEBUG: [Profiling] Starting profile
- [sentry] DEBUG: [ASGI] Started transaction: <Transaction(name='http://127.0.0.1:8000/api/v1/websites/stats/user', op='http.server', trace_id='d69d28fbdce14f47aaaf9b1e8c071cc4', span_id='ad015abbc0275fc8', parent_span_id='ab073fff54705644', sampled=True, source='url')>
- [sentry] DEBUG: [FastAPI] Set transaction name and source on scope: app.api.v1.websites.get_user_stats / component
- [sentry] DEBUG: Sending envelope [envelope with 1 items (transaction)] project:4510198053142608 host:o4510198050521088.ingest.de.sentry.io
- [sentry] DEBUG: [Profiling] updating active thread id to 12935360512
- [sentry] DEBUG: [Profiling] Stopping profile
- [sentry] DEBUG: Sending envelope [envelope with 2 items (profile, transaction)] project:4510198053142608 host:o4510198050521088.ingest.de.sentry.io
- [sentry] DEBUG: [Profiling] Stopping profile
- [sentry] DEBUG: Sending envelope [envelope with 2 items (profile, transaction)] project:4510198053142608 host:o4510198050521088.ingest.de.sentry.io
+Flexible billing mode changes proration, usage billing, trials, invoicing, and supports mixed intervals.
+
+TLDR
+
+Flexible mode aligns billing to actual debits and reporting times, cleans up invoices, standardizes trials, includes pending items consistently, and enables mixed-interval subscriptions. It’s recommended, but behaviors differ from classic in prorations, usage handling, cycle anchors, and schedule transitions.
+
+Key differences and impacts
+ • Credit prorations: Flexible calculates credits from the original debited amount; classic recalculates from current price, tax, quantity, discounts.
+ • Discounts on prorations: Flexible applies discounts proportionally per item; classic spreads evenly.
+ • Usage-based pricing:
+ ▫ No zero-amount line items when adding usage items; empty invoices aren’t generated.
+ ▫ Bills usage at the price effective when the usage was reported (e.g., earlier usage at old price, later usage at new price).
+ ▫ On removal mid-period, may create invoice items for unbilled usage based on proration_behavior; consolidated single invoice at phase transitions.
+ • Billing cycle anchor: Flexible never auto-resets; only resets if you explicitly set billing_cycle_anchor.
+ • Scheduled cancellation: Flexible can disable prorations for a truncated first period via proration_behavior.
+ • Backdating: Flexible splits into separate line items per billing period and aligns the anchor to backdate_start_date; limited to 250 line items max.
+ • Trials:
+ ▫ Uses the most recent trial_start.
+ ▫ Preserves trial_end when cancel_at changes.
+ ▫ Standardizes trial line item descriptions across item types and localizes them.
+ ▫ Only generates line items for changes during a trial; doesn’t rebill unchanged items.
+ • Pending invoice items: Flexible always includes pending items on invoices, including anchor-reset invoices with always_invoice.
+ • Mixed intervals: Flexible supports mixed interval subscriptions (e.g., monthly + annual) within one subscription; classic doesn’t.
+
+Practical migration notes
+
+Expect more precise credits, price-at-reporting usage charges, cleaner invoicing with consolidation, explicit control of cycle anchors, and standardized trial handling. Review proration_behavior in updates, removals, and schedule transitions, and test backdating limits and mixed-interval scenarios.
