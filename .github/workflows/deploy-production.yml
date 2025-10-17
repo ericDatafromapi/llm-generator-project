@@ -9,9 +9,8 @@ on:
         default: ''
   push:
     branches: [ main ]
-    paths-ignore:
-      - '**.md'
-      - 'docs/**'
+    # Removed paths-ignore to ensure all pushes deploy
+    # Even doc-only changes can be important for production
 
 jobs:
   validate-deployment:

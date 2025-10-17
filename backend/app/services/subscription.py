@@ -89,11 +89,15 @@ class SubscriptionService:
             # Retrieve current subscription from Stripe
             stripe_subscription = stripe.Subscription.retrieve(subscription.stripe_subscription_id)
             
+            # Convert to dict for consistent access
+            stripe_sub_dict = dict(stripe_subscription)
+            
             # Get current subscription item ID
-            if not stripe_subscription.items.data:
+            items_data = stripe_sub_dict.get('items', {}).get('data', [])
+            if not items_data:
                 raise ValueError("No subscription items found")
             
-            subscription_item_id = stripe_subscription.items.data[0].id
+            subscription_item_id = items_data[0]['id']
             
             # Modify subscription with proration
             updated_subscription = stripe.Subscription.modify(
@@ -106,6 +110,16 @@ class SubscriptionService:
             )
             
             logger.info(f"✅ Modified subscription {subscription.stripe_subscription_id} to {plan_type} with proration")
+            
+            # Update local subscription record immediately (don't wait for webhook)
+            limits = get_plan_limits(plan_type)
+            subscription.plan_type = plan_type
+            subscription.generations_limit = limits["generations_limit"]
+            subscription.websites_limit = limits["max_websites"]
+            subscription.updated_at = datetime.utcnow()
+            self.db.commit()
+            
+            logger.info(f"✅ Updated local subscription record to {plan_type}")
             
             # Return success URL directly (no checkout needed)
             if not success_url:
@@ -463,11 +477,15 @@ class SubscriptionService:
         # Retrieve current subscription from Stripe
         stripe_subscription = stripe.Subscription.retrieve(subscription.stripe_subscription_id)
         
+        # Convert to dict for consistent access
+        stripe_sub_dict = dict(stripe_subscription)
+        
         # Get current subscription item ID
-        if not stripe_subscription.items.data:
+        items_data = stripe_sub_dict.get('items', {}).get('data', [])
+        if not items_data:
             raise ValueError("No subscription items found")
         
-        subscription_item_id = stripe_subscription.items.data[0].id
+        subscription_item_id = items_data[0]['id']
         
         # Update Stripe subscription with proration
         updated_subscription = stripe.Subscription.modify(

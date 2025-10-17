@@ -160,7 +160,7 @@ export default function DashboardPage() {
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Monthly Generations</span>
                   <span className="font-medium">
-                    {stats?.generations_this_month || 0} / {subscription?.generations_limit || 0}
+                    {subscription?.generations_used || 0} / {subscription?.generations_limit || 0}
                   </span>
                 </div>
                 <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
@@ -168,7 +168,7 @@ export default function DashboardPage() {
                     className="bg-primary h-full transition-all duration-300"
                     style={{
                       width: `${Math.min(
-                        ((stats?.generations_this_month || 0) / (subscription?.generations_limit || 1)) * 100,
+                        ((subscription?.generations_used || 0) / (subscription?.generations_limit || 1)) * 100,
                         100
                       )}%`,
                     }}
