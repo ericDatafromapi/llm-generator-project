@@ -56,8 +56,7 @@ const PLANS = [
       'Premium support',
       'llms.txt + full content',
       'Automatic updates',
-      'API access',
-      'Custom integrations',
+      'API access'
     ],
   },
 ]

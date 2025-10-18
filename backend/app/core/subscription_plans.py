@@ -87,8 +87,7 @@ PLAN_FEATURES: Dict[str, Dict[str, Any]] = {
             "Premium support",
             "llms.txt + full content",
             "Automatic updates",
-            "API access",
-            "Custom integrations"
+            "API access"
         ]
     }
 }
