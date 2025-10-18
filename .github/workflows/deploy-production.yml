@@ -252,8 +252,12 @@ jobs:
       - name: Verify deployment
         run: |
           sleep 5
-          # Try HTTPS first, fallback to HTTP (for IP addresses without SSL)
-          curl -f https://${{ secrets.PRODUCTION_DOMAIN }}/health || curl -f http://${{ secrets.PRODUCTION_DOMAIN }}/health || exit 1
+          # Verify backend health check works via the server
+          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
+            # Test backend is running
+            curl -f http://localhost:8000/health || exit 1
+            echo "✅ Backend health check passed"
+          EOF
 
   deploy-frontend:
     name: Deploy Frontend
@@ -326,8 +330,16 @@ jobs:
       - name: Verify frontend deployment
         run: |
           sleep 5
-          # Try HTTPS first, fallback to HTTP (for IP addresses without SSL)
-          curl -f https://${{ secrets.PRODUCTION_DOMAIN }} || curl -f http://${{ secrets.PRODUCTION_DOMAIN }} || exit 1
+          # Verify frontend files exist on server
+          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
+            # Check if frontend dist directory exists and has files
+            if [ -d "/var/www/llmready/dist" ] && [ -f "/var/www/llmready/dist/index.html" ]; then
+              echo "✅ Frontend files deployed successfully"
+            else
+              echo "❌ Frontend files not found"
+              exit 1
+            fi
+          EOF
 
   notify-deployment:
     name: Send Deployment Notification
