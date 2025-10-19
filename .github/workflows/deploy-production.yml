@@ -171,10 +171,14 @@ jobs:
               sudo tar -czf backups/backup_$timestamp.tar.gz backend/ docker-compose.yml || true
             fi
             
-            # Extract new version
+            # Extract new version (with sudo to overwrite root-owned files)
             echo "Extracting new version..."
-            tar -xzf /tmp/backend.tar.gz
+            sudo tar -xzf /tmp/backend.tar.gz
             rm /tmp/backend.tar.gz
+            
+            # Fix ownership of all files to current user
+            echo "Setting proper ownership..."
+            sudo chown -R $(whoami):$(whoami) backend/ docker-compose.yml
             
             # Update backend .env with Sentry configuration
             if [ -f backend/.env ]; then
