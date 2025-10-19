@@ -167,8 +167,8 @@ jobs:
             if [ -d "backend" ]; then
               echo "Creating backup..."
               timestamp=$(date +%Y%m%d_%H%M%S)
-              mkdir -p backups
-              tar -czf backups/backup_$timestamp.tar.gz backend/ docker-compose.yml || true
+              sudo mkdir -p backups
+              sudo tar -czf backups/backup_$timestamp.tar.gz backend/ docker-compose.yml || true
             fi
             
             # Extract new version
