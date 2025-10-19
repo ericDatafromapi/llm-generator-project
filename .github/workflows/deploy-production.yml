@@ -209,11 +209,11 @@ jobs:
             
             # Pull latest Docker images (postgres & redis)
             echo "Pulling Docker images..."
-            docker compose pull
+            sudo docker compose pull
             
             # Start database services
             echo "Starting database services..."
-            docker compose up -d
+            sudo docker compose up -d
             
             # Wait for database to be ready
             echo "Waiting for database..."
@@ -230,7 +230,7 @@ jobs:
             
             # Create database if it doesn't exist
             DB_NAME=$(echo $DATABASE_URL | sed 's/.*\///')
-            docker exec -i $(docker ps -qf "name=postgres") psql -U postgres -c "CREATE DATABASE $DB_NAME;" 2>/dev/null || echo "Database already exists"
+            sudo docker exec -i $(sudo docker ps -qf "name=postgres") psql -U postgres -c "CREATE DATABASE $DB_NAME;" 2>/dev/null || echo "Database already exists"
             
             alembic upgrade head
             cd ..
@@ -248,7 +248,7 @@ jobs:
             sleep 10
             
             # Check if services are running
-            docker compose ps
+            sudo docker compose ps
             
             echo "✅ Backend deployment complete!"
           EOF
