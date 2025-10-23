@@ -72,3 +72,6 @@ htmlcov/
 *.sqlite3
 
 temp_design_assets/
+
+# Docs
+LLMREADY_MASTER_GUIDE.md
