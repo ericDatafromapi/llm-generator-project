@@ -50,7 +50,7 @@ router = APIRouter()
         429: {"model": ErrorResponse, "description": "Rate limit exceeded"},
     }
 )
-@limiter.limit("5/hour")  # 5 registrations per hour per IP
+@limiter.limit(f"{settings.RATE_LIMIT_REGISTER_PER_HOUR}/hour")
 async def register(
     request: Request,
     user_data: UserRegister,
@@ -153,7 +153,7 @@ async def register(
         429: {"model": ErrorResponse, "description": "Rate limit exceeded"},
     }
 )
-@limiter.limit("5/minute")  # 5 login attempts per minute per IP
+@limiter.limit(f"{settings.RATE_LIMIT_LOGIN_PER_MINUTE}/minute")
 async def login(
     request: Request,
     login_data: UserLogin,

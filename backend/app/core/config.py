@@ -86,6 +86,11 @@ class Settings(BaseSettings):
     
     # Rate Limiting
     RATE_LIMIT_PER_MINUTE: int = 60
+    # Authentication rate limits - STRICT defaults for production security
+    # Override in .env for stress testing: RATE_LIMIT_REGISTER_PER_HOUR=100
+    RATE_LIMIT_REGISTER_PER_HOUR: int = 5    # Registrations per hour per IP (PRODUCTION DEFAULT)
+    RATE_LIMIT_LOGIN_PER_MINUTE: int = 5     # Login attempts per minute per IP (PRODUCTION DEFAULT)
+    RATE_LIMIT_HEALTH_PER_MINUTE: int = 100  # Health checks per minute (PRODUCTION DEFAULT)
     
     # Monitoring & Logging
     SENTRY_DSN: str = ""  # Sentry DSN for error tracking
