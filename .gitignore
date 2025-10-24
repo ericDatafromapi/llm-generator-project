@@ -51,7 +51,8 @@ Thumbs.db
 # Archives
 *.zip
 llmready_mvp.zip
-llm-ready-site copy
+llm-ready-site copy.zip
+llm-ready-site copy/
 
 # Streamlit
 .streamlit/secrets.toml
@@ -73,5 +74,24 @@ htmlcov/
 
 temp_design_assets/
 
-# Docs
+# Stress Testing (keep separate from codebase)
+stress_tests/
+stress_test*.txt
+reports_rate_limit.txt
+
+# Server Analysis Files
+server_capabilies.txt
+
+# Temporary Deployment Guides (server-specific, not in repo)
+deploy_stress_testing.sh
+STRESS_TEST_FINAL_DEPLOYMENT.md
+STRESS_TESTING_DEPLOYMENT_GUIDE.md
+SECURITY_FIXES_DEPLOYMENT.md
+setup_backend.sh
+
+# Monitoring Docs (server-specific)
+DEPLOY_MONITORING.md
+PRODUCTION_MONITORING_COMMANDS.md
+
+# Temporary master guide
 LLMREADY_MASTER_GUIDE.md

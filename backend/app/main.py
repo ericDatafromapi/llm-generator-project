@@ -13,6 +13,7 @@ from app.core.config import settings
 from app.core.database import engine, Base
 from app.core.rate_limit import limiter, rate_limit_exceeded_handler
 from app.core.logging_config import configure_monitoring
+from app.core.security_middleware import SecurityHeadersMiddleware
 from app.api.v1 import auth, password_reset, email_verification, subscriptions, webhooks, generations, websites, contact, refunds
 
 # Initialize monitoring and logging BEFORE creating the app
@@ -38,6 +39,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Add Security Headers Middleware
+app.add_middleware(SecurityHeadersMiddleware)
 
 # Add rate limiter state to app
 app.state.limiter = limiter
@@ -96,8 +100,9 @@ async def shutdown_event():
 
 
 @app.get("/", tags=["Root"])
-async def root():
-    """Root endpoint."""
+@limiter.limit(f"{settings.RATE_LIMIT_HEALTH_PER_MINUTE}/minute")
+async def root(request: Request):
+    """Root endpoint. Rate limited."""
     return {
         "message": "LLMReady API",
         "version": "1.0.0",
@@ -107,10 +112,12 @@ async def root():
 
 
 @app.get("/health", tags=["Health"])
-async def health_check():
+@limiter.limit(f"{settings.RATE_LIMIT_HEALTH_PER_MINUTE}/minute")
+async def health_check(request: Request):
     """
     Health check endpoint.
     Returns 200 if the service is healthy.
+    Rate limited to prevent abuse.
     """
     try:
         # Test database connection
